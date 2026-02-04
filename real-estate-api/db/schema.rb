@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_03_172650) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_053553) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,6 +62,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_172650) do
     t.check_constraint "scheduled_at IS NULL OR scheduled_at >= created_at", name: "scheduled_at_on_or_after_created"
     t.check_constraint "scheduled_type >= 0", name: "valid_scheduled_type"
     t.check_constraint "status >= 0", name: "valid_campaign_status"
+  end
+
+  create_table "contact_import_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "error_details", default: [], null: false
+    t.integer "failed_rows", default: 0, null: false
+    t.string "filename", null: false
+    t.string "job_id", null: false
+    t.bigint "organization_id", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "successful_rows", default: 0, null: false
+    t.integer "total_rows", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["created_at"], name: "index_contact_import_logs_on_created_at"
+    t.index ["job_id"], name: "index_contact_import_logs_on_job_id", unique: true
+    t.index ["organization_id"], name: "index_contact_import_logs_on_organization_id"
+    t.index ["status"], name: "index_contact_import_logs_on_status"
+    t.index ["user_id"], name: "index_contact_import_logs_on_user_id"
   end
 
   create_table "contacts", force: :cascade do |t|
@@ -132,6 +151,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_172650) do
   add_foreign_key "campaign_audiences", "campaigns", on_delete: :cascade
   add_foreign_key "campaigns", "organizations", on_delete: :cascade
   add_foreign_key "campaigns", "users", column: "created_by_id", on_delete: :cascade
+  add_foreign_key "contact_import_logs", "organizations"
+  add_foreign_key "contact_import_logs", "users"
   add_foreign_key "contacts", "organizations", on_delete: :cascade
   add_foreign_key "contacts", "users", column: "created_by_id", on_delete: :cascade
   add_foreign_key "users", "organizations", on_delete: :nullify

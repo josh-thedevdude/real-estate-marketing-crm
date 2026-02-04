@@ -63,3 +63,7 @@ group :development, :test do
 
   gem 'annotate'
 end
+
+gem "kaminari", "~> 1.2"
+gem "csv"
+

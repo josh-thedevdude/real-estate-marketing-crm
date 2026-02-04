@@ -49,6 +49,24 @@ class Contact < ApplicationRecord
 
   # Scopes
   default_scope { kept }
+  scope :by_user, ->(user_id) { where(created_by_id: user_id) }
+  scope :search, ->(query) {
+    where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?",
+          "%#{query}%", "%#{query}%", "%#{query}%")
+  }
+  
+  # Helper methods
+  def full_name
+    "#{first_name} #{last_name}".strip
+  end
+  
+  def preference(key)
+    preferences[key.to_s]
+  end
+  
+  def set_preference(key, value)
+    self.preferences = preferences.merge(key.to_s => value)
+  end
 
   private
 

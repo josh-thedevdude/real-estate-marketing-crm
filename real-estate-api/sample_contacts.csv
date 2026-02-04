@@ -1,0 +1,4 @@
+first_name,last_name,email,phone,contact_type,min_budget,max_budget,property_location,property_type,timeline
+Aryan,Sirdesai,aryan.sirdesai@example.com,9876543225,buyer,5000000,8000000,"baner, wakad, hinjewadi",3bhk,3-6
+AB,sfadsfsdfdgnasjfsdfjsfndsjfdsjfdsjfdksjfdsfnsdhfdsjfhdsfdsuhfdsnfiudshfjkdsfhudsjfnjdshfjkdsfuidsfbjsdhfuidsfusdfh,invalid_type,9876543216,seller,16000000,15000000,wakad,villa,6-9
+Chinmay,Mahajan,cob@example.com,9876543227,renter,20000,50000,"hinjewadi, kharadi",2bhk,0-3

@@ -24,6 +24,14 @@ Rails.application.routes.draw do
           post :accept_invitation
         end
       end
+      
+      resources :contacts do
+        collection do
+          post :import
+        end
+      end
+      
+      resources :contact_import_logs, only: [:index, :show]
     end
   end
 
