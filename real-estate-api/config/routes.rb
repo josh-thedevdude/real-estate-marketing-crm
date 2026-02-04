@@ -32,6 +32,12 @@ Rails.application.routes.draw do
       end
       
       resources :contact_import_logs, only: [:index, :show]
+      
+      resources :audiences do
+        collection do
+          post :preview
+        end
+      end
     end
   end
 

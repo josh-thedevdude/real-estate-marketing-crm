@@ -40,4 +40,17 @@ class Audience < ApplicationRecord
 
   # Scopes
   default_scope { kept }
+  scope :by_user, ->(user_id) { where(created_by_id: user_id) }
+  scope :search, ->(query) {
+    where("name ILIKE ? OR description ILIKE ?", "%#{query}%", "%#{query}%")
+  }
+  
+  # Helper methods
+  def contact_count
+    AudienceQueryService.new(self).count
+  end
+  
+  def contacts(page: 1, per_page: 20)
+    AudienceQueryService.new(self).contacts.page(page).per(per_page)
+  end
 end
