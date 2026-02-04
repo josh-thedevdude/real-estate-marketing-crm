@@ -1,0 +1,32 @@
+# == Schema Information
+#
+# Table name: audiences
+#
+#  id              :integer          not null, primary key
+#  created_at      :datetime         not null
+#  created_by_id   :integer          not null
+#  deleted_at      :datetime
+#  description     :text
+#  filters         :jsonb            default("{}"), not null
+#  name            :string           not null
+#  organization_id :integer          not null
+#  updated_at      :datetime         not null
+#
+
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  created_by: one
+  organization: one
+  name: MyString
+  description: MyText
+  filters: 
+  deleted_at: 2026-02-03 15:56:26
+
+two:
+  created_by: two
+  organization: two
+  name: MyString
+  description: MyText
+  filters: 
+  deleted_at: 2026-02-03 15:56:26
