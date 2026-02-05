@@ -29,9 +29,12 @@ class Campaign < ApplicationRecord
   # Associations
   belongs_to :organization
   belongs_to :created_by, class_name: 'User'
+  belongs_to :email_template, optional: true
 
   has_many :campaign_audiences, dependent: :delete_all
   has_many :audiences, through: :campaign_audiences
+  has_many :campaign_emails, dependent: :destroy
+  has_one :campaign_statistic, dependent: :destroy
   
   # Validations
   validates :name, presence: true, 
@@ -49,6 +52,36 @@ class Campaign < ApplicationRecord
 
   # Scopes
   default_scope { kept }
+  scope :by_user, ->(user_id) { where(created_by_id: user_id) }
+  scope :search, ->(query) {
+    where("name ILIKE ? OR description ILIKE ?", "%#{query}%", "%#{query}%")
+  }
   scope :by_status, ->(status) { where(status: status) }
   scope :scheduled_between, ->(start_time, end_time) { where(scheduled_at: start_time..end_time) }
+  scope :due_for_execution, -> {
+    where(status: :created)
+      .where("scheduled_at <= ?", Time.current)
+      .where(deleted_at: nil)
+  }
+  
+  # Helper methods
+  def total_contacts
+    campaign_statistic&.total_contacts || 0
+  end
+  
+  def emails_sent
+    campaign_statistic&.emails_sent || 0
+  end
+  
+  def success_rate
+    campaign_statistic&.success_rate || 0
+  end
+  
+  def can_execute?
+    created? && audiences.any? && email_template.present?
+  end
+  
+  def can_update?
+    created?
+  end
 end

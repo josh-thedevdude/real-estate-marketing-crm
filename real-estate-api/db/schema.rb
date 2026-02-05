@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_053553) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_173033) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -39,11 +39,53 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_053553) do
     t.index ["campaign_id", "audience_id"], name: "index_campaign_audiences_on_campaign_and_audience", unique: true
   end
 
+  create_table "campaign_emails", force: :cascade do |t|
+    t.bigint "audience_id"
+    t.text "body", null: false
+    t.datetime "bounced_at"
+    t.bigint "campaign_id", null: false
+    t.datetime "clicked_at"
+    t.bigint "contact_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.string "email", null: false
+    t.text "error_message"
+    t.datetime "opened_at"
+    t.datetime "sent_at"
+    t.integer "status", default: 0, null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.index ["audience_id"], name: "index_campaign_emails_on_audience_id"
+    t.index ["campaign_id", "contact_id"], name: "index_campaign_emails_on_campaign_and_contact", unique: true
+    t.index ["campaign_id", "status"], name: "index_campaign_emails_on_campaign_id_and_status"
+    t.index ["campaign_id"], name: "index_campaign_emails_on_campaign_id"
+    t.index ["contact_id"], name: "index_campaign_emails_on_contact_id"
+    t.index ["sent_at"], name: "index_campaign_emails_on_sent_at"
+    t.index ["status"], name: "index_campaign_emails_on_status"
+  end
+
+  create_table "campaign_statistics", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "emails_bounced", default: 0, null: false
+    t.integer "emails_clicked", default: 0, null: false
+    t.integer "emails_delivered", default: 0, null: false
+    t.integer "emails_failed", default: 0, null: false
+    t.integer "emails_opened", default: 0, null: false
+    t.integer "emails_sent", default: 0, null: false
+    t.datetime "last_sent_at"
+    t.integer "total_contacts", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id"], name: "index_campaign_statistics_on_campaign_id", unique: true
+  end
+
   create_table "campaigns", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "created_by_id", null: false
+    t.jsonb "custom_variables", default: {}, null: false
     t.datetime "deleted_at"
     t.text "description"
+    t.bigint "email_template_id"
     t.string "name", null: false
     t.bigint "organization_id", null: false
     t.datetime "scheduled_at"
@@ -52,12 +94,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_053553) do
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_campaigns_on_created_by_id"
     t.index ["deleted_at"], name: "index_campaigns_on_deleted_at"
+    t.index ["email_template_id"], name: "index_campaigns_on_email_template_id"
     t.index ["organization_id", "deleted_at"], name: "index_campaigns_on_org_and_deleted"
     t.index ["organization_id", "name"], name: "index_campaigns_on_org_and_name", unique: true, where: "(deleted_at IS NULL)"
     t.index ["organization_id", "status", "deleted_at"], name: "index_campaigns_on_org_status_deleted"
     t.index ["organization_id"], name: "index_campaigns_on_organization_id"
     t.index ["scheduled_at", "status"], name: "index_campaigns_on_scheduled_pending", where: "((deleted_at IS NULL) AND (scheduled_at IS NOT NULL))"
     t.index ["scheduled_at"], name: "index_campaigns_on_scheduled_at"
+    t.index ["status", "scheduled_at"], name: "index_campaigns_on_status_and_scheduled", where: "((deleted_at IS NULL) AND (status = 0))"
     t.index ["status"], name: "index_campaigns_on_status"
     t.check_constraint "scheduled_at IS NULL OR scheduled_at >= created_at", name: "scheduled_at_on_or_after_created"
     t.check_constraint "scheduled_type >= 0", name: "valid_scheduled_type"
@@ -105,6 +149,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_053553) do
     t.check_constraint "phone IS NULL OR phone::text ~ '^(\\+91|91)?[6-9][0-9]{9}$'::text", name: "valid_india_mobile_phone"
   end
 
+  create_table "email_templates", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "deleted_at"
+    t.string "name", null: false
+    t.bigint "organization_id", null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "variables", default: {}, null: false
+    t.index ["created_by_id"], name: "index_email_templates_on_created_by_id"
+    t.index ["deleted_at"], name: "index_email_templates_on_deleted_at"
+    t.index ["organization_id", "deleted_at"], name: "index_email_templates_on_organization_id_and_deleted_at"
+    t.index ["organization_id", "name"], name: "index_email_templates_on_org_and_name", unique: true, where: "(deleted_at IS NULL)"
+    t.index ["organization_id"], name: "index_email_templates_on_organization_id"
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
@@ -149,12 +210,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_053553) do
   add_foreign_key "audiences", "users", column: "created_by_id", on_delete: :cascade
   add_foreign_key "campaign_audiences", "audiences", on_delete: :cascade
   add_foreign_key "campaign_audiences", "campaigns", on_delete: :cascade
+  add_foreign_key "campaign_emails", "audiences"
+  add_foreign_key "campaign_emails", "campaigns"
+  add_foreign_key "campaign_emails", "contacts"
+  add_foreign_key "campaign_statistics", "campaigns"
+  add_foreign_key "campaigns", "email_templates"
   add_foreign_key "campaigns", "organizations", on_delete: :cascade
   add_foreign_key "campaigns", "users", column: "created_by_id", on_delete: :cascade
   add_foreign_key "contact_import_logs", "organizations"
   add_foreign_key "contact_import_logs", "users"
   add_foreign_key "contacts", "organizations", on_delete: :cascade
   add_foreign_key "contacts", "users", column: "created_by_id", on_delete: :cascade
+  add_foreign_key "email_templates", "organizations"
+  add_foreign_key "email_templates", "users", column: "created_by_id"
   add_foreign_key "users", "organizations", on_delete: :nullify
   add_foreign_key "users", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "users", "users", column: "invited_by_id", on_delete: :nullify

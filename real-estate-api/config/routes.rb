@@ -38,6 +38,23 @@ Rails.application.routes.draw do
           post :preview
         end
       end
+      
+      resources :email_templates do
+        collection do
+          post :preview
+        end
+      end
+      
+      resources :campaigns do
+        collection do
+          post :preview_contacts
+        end
+        
+        member do
+          post :execute
+          get :emails
+        end
+      end
     end
   end
 

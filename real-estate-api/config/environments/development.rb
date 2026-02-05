@@ -74,13 +74,32 @@ Rails.application.configure do
   # Configure ActiveJob to use async adapter for background jobs
   config.active_job.queue_adapter = :async
   
+  # Email configuration based on provider
   config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    user_name: ENV["MAILTRAP_USERNAME"],
-    password: ENV["MAILTRAP_PASSWORD"],
-    address: ENV["MAILTRAP_ADDRESS"],
-    host: ENV["MAILTRAP_HOST"],
-    port: ENV["MAILTRAP_PORT"],
-    authentication: :login
-  }
+  
+  if ENV['EMAIL_PROVIDER'] == 'gmail'
+    # Gmail SMTP configuration
+    config.action_mailer.smtp_settings = {
+      address: 'smtp.gmail.com',
+      port: 587,
+      domain: ENV['GMAIL_DOMAIN'] || 'gmail.com',
+      user_name: ENV['GMAIL_USERNAME'],
+      password: ENV['GMAIL_APP_PASSWORD'],
+      authentication: :plain,
+      enable_starttls_auto: true
+    }
+    config.action_mailer.default_options = {
+      from: ENV['GMAIL_USERNAME']
+    }
+  else
+    # Mailtrap SMTP configuration (default)
+    config.action_mailer.smtp_settings = {
+      user_name: ENV["MAILTRAP_USERNAME"],
+      password: ENV["MAILTRAP_PASSWORD"],
+      address: ENV["MAILTRAP_ADDRESS"],
+      host: ENV["MAILTRAP_HOST"],
+      port: ENV["MAILTRAP_PORT"],
+      authentication: :login
+    }
+  end
 end
