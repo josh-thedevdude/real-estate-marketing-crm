@@ -4,7 +4,7 @@ class ContactImportJob < ApplicationJob
   queue_as :default
   
   REQUIRED_HEADERS = %w[first_name last_name email].freeze
-  PREFERENCE_COLUMNS = %w[contact_type min_budget max_budget property_location property_type timeline].freeze
+  PREFERENCE_COLUMNS = %w[contact_type min_budget max_budget property_locations property_types timeline].freeze
   
   # Valid enum values
   CONTACT_TYPES = %w[buyer seller renter].freeze
@@ -136,24 +136,26 @@ class ContactImportJob < ApplicationJob
     end
     
     # Property location (array of enums - comma separated)
-    if row['property_location'].present?
-      locations = row['property_location'].split(',').map { |loc| loc.downcase.strip }
+    if row['property_locations'].present?
+      locations = row['property_locations'].split(',').map { |loc| loc.downcase.strip }
       invalid_locations = locations.reject { |loc| PROPERTY_LOCATIONS.include?(loc) }
       
       if invalid_locations.any?
-        errors << "Invalid property_location(s): #{invalid_locations.join(', ')}. Must be one of: #{PROPERTY_LOCATIONS.join(', ')}"
+        errors << "Invalid property_locations(s): #{invalid_locations.join(', ')}. Must be one of: #{PROPERTY_LOCATIONS.join(', ')}"
       else
-        prefs['property_location'] = locations
+        prefs['property_locations'] = locations
       end
     end
     
-    # Property type (enum)
-    if row['property_type'].present?
-      property_type = row['property_type'].downcase.gsub(/\s+/, '')
-      if PROPERTY_TYPES.include?(property_type)
-        prefs['property_type'] = property_type
+    # Property types (array of enums - comma separated)
+    if row['property_types'].present?
+      types = row['property_types'].split(',').map { |type| type.downcase.gsub(/\s+/, '') }
+      invalid_types = types.reject { |type| PROPERTY_TYPES.include?(type) }
+      
+      if invalid_types.any?
+        errors << "Invalid property_types(s): #{invalid_types.join(', ')}. Must be one of: #{PROPERTY_TYPES.join(', ')}"
       else
-        errors << "Invalid property_type: #{row['property_type']}. Must be one of: #{PROPERTY_TYPES.join(', ')}"
+        prefs['property_types'] = types
       end
     end
     

@@ -61,16 +61,16 @@ class AudienceQueryService
     if filters['property_locations'].present? && filters['property_locations'].is_a?(Array)
       # Check if any of the filter locations exist in the contact's property_location array
       query = query.where(
-        "preferences->'property_location' ?| array[:locations]",
+        "preferences->'property_locations' ?| array[:locations]",
         locations: filters['property_locations']
       )
     end
     
-    # Property types filter
+    # Property types filter (array overlap)
     if filters['property_types'].present? && filters['property_types'].is_a?(Array)
       query = query.where(
-        "preferences->>'property_type' IN (?)",
-        filters['property_types']
+        "preferences->'property_types' ?| array[:types]",
+        types: filters['property_types']
       )
     end
     
