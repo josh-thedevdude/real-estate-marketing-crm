@@ -1,0 +1,47 @@
+.input-group {
+  margin-bottom: 1rem;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.required {
+  color: var(--danger-color);
+  margin-left: 0.25rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+  background-color: var(--bg-white);
+}
+
+.input-field:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+.input-field:disabled {
+  background-color: var(--bg-light);
+  cursor: not-allowed;
+}
+
+.input-error {
+  border-color: var(--danger-color);
+}
+
+.error-message {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--danger-color);
+}

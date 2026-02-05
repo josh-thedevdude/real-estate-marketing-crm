@@ -1,0 +1,32 @@
+.unauthorized-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-light);
+}
+
+.unauthorized-card {
+  background-color: white;
+  padding: 3rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.unauthorized-card h1 {
+  font-size: 4rem;
+  color: var(--danger-color);
+  margin-bottom: 1rem;
+}
+
+.unauthorized-card h2 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.unauthorized-card p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}

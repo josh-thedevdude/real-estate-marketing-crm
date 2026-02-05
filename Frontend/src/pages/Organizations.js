@@ -1,0 +1,284 @@
+import React, { useState, useEffect } from 'react';
+import organizationService from '../services/organizationService';
+import Card from '../components/Card';
+import Button from '../components/Button';
+import Table from '../components/Table';
+import Modal from '../components/Modal';
+import ConfirmModal from '../components/ConfirmModal';
+import Input from '../components/Input';
+import { formatDate } from '../utils/helpers';
+import './Organizations.css';
+
+const Organizations = () => {
+  const [organizations, setOrganizations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [editingOrg, setEditingOrg] = useState(null);
+  const [viewingOrg, setViewingOrg] = useState(null);
+  const [formData, setFormData] = useState({ name: '' });
+  const [error, setError] = useState('');
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    variant: 'primary',
+  });
+
+  useEffect(() => {
+    fetchOrganizations();
+  }, [showDeleted]);
+
+  const fetchOrganizations = async () => {
+    setLoading(true);
+    try {
+      const data = await organizationService.getAll(showDeleted);
+      setOrganizations(data);
+    } catch (err) {
+      console.error('Error fetching organizations:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdd = () => {
+    setEditingOrg(null);
+    setFormData({ name: '' });
+    setError('');
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (org) => {
+    setEditingOrg(org);
+    setFormData({ name: org.name });
+    setError('');
+    setIsModalOpen(true);
+  };
+
+  const handleView = async (org) => {
+    try {
+      const data = await organizationService.getById(org.id);
+      setViewingOrg(data);
+      setIsViewModalOpen(true);
+    } catch (err) {
+      setError('Error fetching organization details');
+    }
+  };
+
+  const handleDelete = (org) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Organization',
+      message: `Are you sure you want to delete "${org.name}"? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          await organizationService.delete(org.id);
+          fetchOrganizations();
+        } catch (err) {
+          setError('Error deleting organization');
+        }
+      },
+      variant: 'danger',
+      confirmText: 'Delete',
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const action = editingOrg ? 'update' : 'create';
+    const actionText = editingOrg ? 'Update' : 'Create';
+    
+    setConfirmModal({
+      isOpen: true,
+      title: `${actionText} Organization`,
+      message: `Are you sure you want to ${action} this organization?`,
+      onConfirm: async () => {
+        setError('');
+        try {
+          if (editingOrg) {
+            await organizationService.update(editingOrg.id, formData);
+          } else {
+            await organizationService.create(formData);
+          }
+          setIsModalOpen(false);
+          fetchOrganizations();
+        } catch (err) {
+          setError(err.response?.data?.error || 'An error occurred');
+        }
+      },
+      variant: 'primary',
+      confirmText: actionText,
+    });
+  };
+
+  const columns = [
+    { key: 'id', label: 'ID' },
+    { key: 'name', label: 'Name' },
+    {
+      key: 'users_count',
+      label: 'Users',
+      render: (value) => value || 0,
+    },
+    {
+      key: 'contacts_count',
+      label: 'Contacts',
+      render: (value) => value || 0,
+    },
+    {
+      key: 'created_at',
+      label: 'Created At',
+      render: (value) => formatDate(value),
+    },
+    {
+      key: 'deleted_at',
+      label: 'Status',
+      render: (value) => (
+        value ? (
+          <span className="badge badge-danger">Deleted</span>
+        ) : (
+          <span className="badge badge-success">Active</span>
+        )
+      ),
+    },
+  ];
+
+  const actionColumn = {
+    key: 'view',
+    label: 'View',
+    render: (_, org) => (
+      <button 
+        className="btn-action btn-action-view"
+        onClick={() => handleView(org)}
+      >
+        View Details
+      </button>
+    ),
+  };
+
+  const displayColumns = [...columns, actionColumn];
+
+  return (
+    <div>
+      <h1 className="page-title">Organizations</h1>
+      
+      <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={showDeleted}
+            onChange={(e) => setShowDeleted(e.target.checked)}
+            style={{ cursor: 'pointer' }}
+          />
+          <span>Include Deleted Organizations</span>
+        </label>
+        
+        <Button onClick={handleAdd} variant="primary">
+          Create Organization
+        </Button>
+      </div>
+
+      <Card>
+        <Table
+          columns={displayColumns}
+          data={organizations}
+          loading={loading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </Card>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingOrg ? 'Edit Organization' : 'Add Organization'}
+      >
+        <form onSubmit={handleSubmit}>
+          {error && <div className="error-alert">{error}</div>}
+          <Input
+            label="Organization Name"
+            name="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ name: e.target.value })}
+            required
+          />
+          <div className="modal-actions">
+            <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+              {editingOrg ? 'Update' : 'Create'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        title="Organization Details"
+        size="medium"
+      >
+        {viewingOrg && (
+          <div style={{ padding: '1rem' }}>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>ID:</strong> {viewingOrg.id}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Name:</strong> {viewingOrg.name}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Users Count:</strong> {viewingOrg.users_count || 0}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Contacts Count:</strong> {viewingOrg.contacts_count || 0}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Audiences Count:</strong> {viewingOrg.audiences_count || 0}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Campaigns Count:</strong> {viewingOrg.campaigns_count || 0}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Created At:</strong> {formatDate(viewingOrg.created_at)}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Updated At:</strong> {formatDate(viewingOrg.updated_at)}
+            </div>
+            {viewingOrg.deleted_at && (
+              <div style={{ marginBottom: '1rem' }}>
+                <strong>Deleted At:</strong> {formatDate(viewingOrg.deleted_at)}
+              </div>
+            )}
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Status:</strong>{' '}
+              {viewingOrg.deleted_at ? (
+                <span className="badge badge-danger">Deleted</span>
+              ) : (
+                <span className="badge badge-success">Active</span>
+              )}
+            </div>
+          </div>
+        )}
+        <div style={{ padding: '0 1rem 1rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <Button variant="secondary" onClick={() => setIsViewModalOpen(false)}>
+            Close
+          </Button>
+        </div>
+      </Modal>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        variant={confirmModal.variant}
+        confirmText={confirmModal.confirmText}
+      />
+    </div>
+  );
+};
+
+export default Organizations;

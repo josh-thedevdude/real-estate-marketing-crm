@@ -1,0 +1,16 @@
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.error-alert {
+  padding: 0.75rem;
+  background-color: #fee2e2;
+  border: 1px solid var(--danger-color);
+  border-radius: 4px;
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
