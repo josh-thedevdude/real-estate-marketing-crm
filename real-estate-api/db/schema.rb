@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_173033) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_05_195135) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -43,6 +43,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_173033) do
     t.bigint "audience_id"
     t.text "body", null: false
     t.datetime "bounced_at"
+    t.bigint "campaign_execution_id"
     t.bigint "campaign_id", null: false
     t.datetime "clicked_at"
     t.bigint "contact_id", null: false
@@ -56,12 +57,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_173033) do
     t.string "subject", null: false
     t.datetime "updated_at", null: false
     t.index ["audience_id"], name: "index_campaign_emails_on_audience_id"
+    t.index ["campaign_execution_id", "status"], name: "index_campaign_emails_on_campaign_execution_id_and_status"
+    t.index ["campaign_execution_id"], name: "index_campaign_emails_on_campaign_execution_id"
     t.index ["campaign_id", "contact_id"], name: "index_campaign_emails_on_campaign_and_contact", unique: true
     t.index ["campaign_id", "status"], name: "index_campaign_emails_on_campaign_id_and_status"
     t.index ["campaign_id"], name: "index_campaign_emails_on_campaign_id"
     t.index ["contact_id"], name: "index_campaign_emails_on_contact_id"
     t.index ["sent_at"], name: "index_campaign_emails_on_sent_at"
     t.index ["status"], name: "index_campaign_emails_on_status"
+  end
+
+  create_table "campaign_executions", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.integer "emails_failed", default: 0, null: false
+    t.integer "emails_sent", default: 0, null: false
+    t.text "error_message"
+    t.datetime "executed_at", null: false
+    t.bigint "organization_id", null: false
+    t.datetime "started_at"
+    t.integer "status", default: 0, null: false
+    t.decimal "success_rate", precision: 5, scale: 2, default: "0.0"
+    t.integer "total_contacts", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id", "executed_at"], name: "index_campaign_executions_on_campaign_id_and_executed_at"
+    t.index ["campaign_id", "status"], name: "index_campaign_executions_on_campaign_id_and_status"
+    t.index ["campaign_id"], name: "index_campaign_executions_on_campaign_id"
+    t.index ["organization_id"], name: "index_campaign_executions_on_organization_id"
   end
 
   create_table "campaign_statistics", force: :cascade do |t|
@@ -86,8 +109,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_173033) do
     t.datetime "deleted_at"
     t.text "description"
     t.bigint "email_template_id"
+    t.integer "execution_count", default: 0, null: false
+    t.datetime "last_executed_at"
+    t.integer "max_occurrences"
     t.string "name", null: false
+    t.datetime "next_execution_at"
+    t.integer "occurrence_count", default: 0, null: false
     t.bigint "organization_id", null: false
+    t.datetime "recurrence_end_date"
+    t.integer "recurrence_interval"
     t.datetime "scheduled_at"
     t.integer "scheduled_type", default: 0, null: false
     t.integer "status", default: 0, null: false
@@ -95,12 +125,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_173033) do
     t.index ["created_by_id"], name: "index_campaigns_on_created_by_id"
     t.index ["deleted_at"], name: "index_campaigns_on_deleted_at"
     t.index ["email_template_id"], name: "index_campaigns_on_email_template_id"
+    t.index ["next_execution_at"], name: "index_campaigns_on_next_execution_at"
     t.index ["organization_id", "deleted_at"], name: "index_campaigns_on_org_and_deleted"
     t.index ["organization_id", "name"], name: "index_campaigns_on_org_and_name", unique: true, where: "(deleted_at IS NULL)"
     t.index ["organization_id", "status", "deleted_at"], name: "index_campaigns_on_org_status_deleted"
     t.index ["organization_id"], name: "index_campaigns_on_organization_id"
+    t.index ["recurrence_end_date"], name: "index_campaigns_on_recurrence_end_date"
+    t.index ["recurrence_interval"], name: "index_campaigns_on_recurrence_interval"
     t.index ["scheduled_at", "status"], name: "index_campaigns_on_scheduled_pending", where: "((deleted_at IS NULL) AND (scheduled_at IS NOT NULL))"
     t.index ["scheduled_at"], name: "index_campaigns_on_scheduled_at"
+    t.index ["scheduled_type", "next_execution_at"], name: "index_campaigns_on_scheduled_type_and_next_execution_at"
+    t.index ["scheduled_type", "status", "next_execution_at"], name: "index_campaigns_on_scheduling"
     t.index ["status", "scheduled_at"], name: "index_campaigns_on_status_and_scheduled", where: "((deleted_at IS NULL) AND (status = 0))"
     t.index ["status"], name: "index_campaigns_on_status"
     t.check_constraint "scheduled_at IS NULL OR scheduled_at >= created_at", name: "scheduled_at_on_or_after_created"
@@ -211,8 +246,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_173033) do
   add_foreign_key "campaign_audiences", "audiences", on_delete: :cascade
   add_foreign_key "campaign_audiences", "campaigns", on_delete: :cascade
   add_foreign_key "campaign_emails", "audiences"
+  add_foreign_key "campaign_emails", "campaign_executions"
   add_foreign_key "campaign_emails", "campaigns"
   add_foreign_key "campaign_emails", "contacts"
+  add_foreign_key "campaign_executions", "campaigns"
+  add_foreign_key "campaign_executions", "organizations"
   add_foreign_key "campaign_statistics", "campaigns"
   add_foreign_key "campaigns", "email_templates"
   add_foreign_key "campaigns", "organizations", on_delete: :cascade

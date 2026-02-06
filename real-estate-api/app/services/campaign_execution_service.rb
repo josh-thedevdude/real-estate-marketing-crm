@@ -37,6 +37,11 @@ class CampaignExecutionService
         total_contacts: contacts_data.count
       )
       
+      # Increment occurrence count for recurring campaigns
+      if campaign.recurring?
+        campaign.increment!(:occurrence_count)
+      end
+      
       # Update campaign status
       campaign.update!(status: :running)
     end

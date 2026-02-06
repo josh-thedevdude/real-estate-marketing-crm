@@ -25,8 +25,10 @@ class CampaignSchedulerJob < ApplicationJob
               total_campaigns += 1
               
               # For recurring campaigns, schedule next execution
-              if campaign.recurring?
+              if campaign.recurring? && campaign.should_continue_recurring?
                 schedule_next_execution(campaign)
+              elsif campaign.recurring?
+                Rails.logger.info("Campaign Scheduler: Campaign ##{campaign.id} will not recur (end date or max occurrences reached)")
               end
             else
               Rails.logger.error("Campaign Scheduler: Failed to start campaign ##{campaign.id}")
@@ -42,21 +44,29 @@ class CampaignSchedulerJob < ApplicationJob
   private
   
   def schedule_next_execution(campaign)
-    # Calculate next execution time (e.g., +1 week)
-    next_scheduled_at = campaign.scheduled_at + 1.week
+    # Calculate next execution time based on recurrence interval
+    next_scheduled_at = campaign.next_scheduled_time
+    
+    return unless next_scheduled_at
     
     # Create new campaign for next execution
     new_campaign = campaign.dup
     new_campaign.scheduled_at = next_scheduled_at
     new_campaign.status = :created
+    new_campaign.occurrence_count = campaign.occurrence_count # Will be incremented on execution
+    
+    # Explicitly copy recurring fields (dup doesn't always copy enum values)
+    new_campaign.recurrence_interval = campaign.recurrence_interval
+    new_campaign.recurrence_end_date = campaign.recurrence_end_date
+    new_campaign.max_occurrences = campaign.max_occurrences
     
     if new_campaign.save
       # Copy audiences
       new_campaign.audiences << campaign.audiences
       
-      Rails.logger.info("Campaign Scheduler: Scheduled next execution of campaign '#{campaign.name}' for #{next_scheduled_at}")
+      Rails.logger.info("Campaign Scheduler: Scheduled next execution of campaign '#{campaign.name}' for #{next_scheduled_at} (#{campaign.recurrence_interval})")
     else
-      Rails.logger.error("Campaign Scheduler: Failed to schedule next execution: #{new_campaign.errors.full_messages}")
+      Rails.logger.error("Campaign Scheduler: Failed to schedule next execution: #{new_campaign.errors.full_messages.join(', ')}")
     end
   end
 end

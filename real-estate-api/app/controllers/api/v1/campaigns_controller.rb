@@ -227,6 +227,9 @@ module Api
           :email_template_id,
           :scheduled_type,
           :scheduled_at,
+          :recurrence_interval,
+          :recurrence_end_date,
+          :max_occurrences,
           custom_variables: {}
         )
       end
@@ -249,6 +252,14 @@ module Api
           created_at: campaign.created_at,
           updated_at: campaign.updated_at
         }
+        
+        # Add recurring campaign fields if applicable
+        if campaign.recurring?
+          json[:recurrence_interval] = campaign.recurrence_interval
+          json[:recurrence_end_date] = campaign.recurrence_end_date
+          json[:max_occurrences] = campaign.max_occurrences
+          json[:occurrence_count] = campaign.occurrence_count
+        end
         
         if include_stats && campaign.campaign_statistic
           json[:statistics] = {

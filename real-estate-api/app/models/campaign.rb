@@ -25,6 +25,12 @@ class Campaign < ApplicationRecord
   # Enums
   enum :status, { created: 0, running: 1, completed: 2, failed: 3, partial: 4 }, default: :created
   enum :scheduled_type, { immediate: 0, scheduled: 1, recurring: 2 }, default: :scheduled
+  enum :recurrence_interval, {
+    daily: 0,
+    weekly: 1,
+    biweekly: 2,
+    monthly: 3
+  }, prefix: true
 
   # Associations
   belongs_to :organization
@@ -49,6 +55,11 @@ class Campaign < ApplicationRecord
   validates :scheduled_type, presence: true
   validates :scheduled_at, presence: true, if: -> { scheduled? || recurring? }
   validates :status, presence: true
+  
+  # Recurring campaign validations
+  validates :recurrence_interval, presence: true, if: :recurring?
+  validate :recurrence_end_date_after_scheduled_at, if: :recurring?
+  validate :max_occurrences_positive, if: :recurring?
 
   # Scopes
   default_scope { kept }
@@ -83,5 +94,53 @@ class Campaign < ApplicationRecord
   
   def can_update?
     created?
+  end
+  
+  # Recurring campaign methods
+  def next_scheduled_time
+    return nil unless recurring? && scheduled_at.present?
+    
+    case recurrence_interval
+    when 'daily'
+      scheduled_at + 1.day
+    when 'weekly'
+      scheduled_at + 1.week
+    when 'biweekly'
+      scheduled_at + 2.weeks
+    when 'monthly'
+      scheduled_at + 1.month
+    else
+      scheduled_at + 1.week # default fallback
+    end
+  end
+  
+  def should_continue_recurring?
+    return false unless recurring?
+    
+    # Check if end date has passed
+    if recurrence_end_date.present? && Time.current >= recurrence_end_date
+      return false
+    end
+    
+    # Check if max occurrences reached
+    if max_occurrences.present? && occurrence_count >= max_occurrences
+      return false
+    end
+    
+    true
+  end
+  
+  private
+  
+  def recurrence_end_date_after_scheduled_at
+    if recurrence_end_date.present? && scheduled_at.present? && recurrence_end_date <= scheduled_at
+      errors.add(:recurrence_end_date, 'must be after scheduled_at')
+    end
+  end
+  
+  def max_occurrences_positive
+    if max_occurrences.present? && max_occurrences <= 0
+      errors.add(:max_occurrences, 'must be greater than 0')
+    end
   end
 end
