@@ -5,8 +5,16 @@ module Api
       
       # POST /api/v1/auth/login
       def login
+        # Get email and password from params (support both direct and nested formats)
+        email = params[:email] || params.dig(:authentication, :email)
+        password = params[:password] || params.dig(:authentication, :password)
+        
+        # Strip whitespace
+        email = email&.strip
+        password = password&.strip
+        
         # Find user by email (without tenant for super_admin, with tenant for org users)
-        user = find_user_by_email(params[:email])
+        user = find_user_by_email(email)
 
         unless user
           render json: {
@@ -14,9 +22,9 @@ module Api
           }, status: :unauthorized
           return
         end
-
+        
         # Verify password
-        unless user.authenticate(params[:password])
+        unless user.authenticate(password)
           render json: {
             error: 'Invalid email or password'
           }, status: :unauthorized
@@ -70,8 +78,9 @@ module Api
         return nil if email.blank?
 
         # Try to find user without tenant first (for super_admin)
+        # Only find users with a password_digest set
         user = ActsAsTenant.without_tenant do
-          User.unscoped.find_by(email: email.downcase.strip)
+          User.unscoped.where(email: email.downcase.strip).where.not(password_digest: [nil, '']).order(id: :desc).first
         end
 
         user

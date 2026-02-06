@@ -19,6 +19,8 @@ const Organizations = () => {
   const [formData, setFormData] = useState({ name: '' });
   const [error, setError] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -151,6 +153,11 @@ const Organizations = () => {
       <button 
         className="btn-action btn-action-view"
         onClick={() => handleView(org)}
+        disabled={!!org.deleted_at}
+        style={{
+          opacity: org.deleted_at ? 0.5 : 1,
+          cursor: org.deleted_at ? 'not-allowed' : 'pointer'
+        }}
       >
         View Details
       </button>
@@ -159,11 +166,98 @@ const Organizations = () => {
 
   const displayColumns = [...columns, actionColumn];
 
+  // Wrapper functions to prevent actions on deleted organizations
+  const handleEditWrapper = (org) => {
+    if (org.deleted_at) return;
+    handleEdit(org);
+  };
+
+  const handleDeleteWrapper = (org) => {
+    if (org.deleted_at) return;
+    handleDelete(org);
+  };
+
+  // Filter and search logic
+  const filteredOrganizations = organizations.filter(org => {
+    // Search filter (name)
+    const matchesSearch = org.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Status filter (deleted or active)
+    const matchesStatus = !filterStatus || 
+      (filterStatus === 'active' && !org.deleted_at) ||
+      (filterStatus === 'deleted' && org.deleted_at);
+    
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div>
       <h1 className="page-title">Organizations</h1>
       
-      <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Filters and Search Section */}
+      <Card style={{ marginBottom: '1.5rem', padding: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+          {/* Search Bar */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+              Search by Name
+            </label>
+            <input
+              type="text"
+              placeholder="Search organization..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '0.875rem'
+              }}
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+              Filter by Status
+            </label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '0.875rem',
+                backgroundColor: 'white'
+              }}
+            >
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="deleted">Deleted</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Clear Filters Button */}
+        {(searchTerm || filterStatus) && (
+          <Button
+            onClick={() => {
+              setSearchTerm('');
+              setFilterStatus('');
+            }}
+            variant="secondary"
+            style={{ marginTop: '1rem' }}
+          >
+            Clear Filters
+          </Button>
+        )}
+      </Card>
+      
+      {/* Actions Section */}
+      <div style={{ marginTop: '2rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
           <input
             type="checkbox"
@@ -182,10 +276,10 @@ const Organizations = () => {
       <Card>
         <Table
           columns={displayColumns}
-          data={organizations}
+          data={filteredOrganizations}
           loading={loading}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          onEdit={handleEditWrapper}
+          onDelete={handleDeleteWrapper}
         />
       </Card>
 

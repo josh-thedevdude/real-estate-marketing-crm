@@ -35,6 +35,24 @@ module Api
           return
         end
 
+        # Check if user with this email already exists with pending invitation
+        existing_user = ActsAsTenant.without_tenant do
+          User.unscoped.where(
+            email: params[:user][:email]&.downcase&.strip,
+            organization_id: params[:user][:organization_id] || current_user.organization_id
+          ).where(invitation_accepted_at: nil).first
+        end
+
+        if existing_user
+          # Resend invitation to existing pending user
+          UserMailer.invitation_email(existing_user).deliver_later
+          render json: {
+            message: 'User invitation resent successfully.',
+            user: user_json(existing_user)
+          }, status: :ok
+          return
+        end
+
         # Wrap in without_tenant to avoid NoTenantSet error
         @user = ActsAsTenant.without_tenant do
           user = User.new(user_create_params)

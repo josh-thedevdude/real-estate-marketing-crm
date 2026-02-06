@@ -4,13 +4,32 @@ module Api
       include Authenticatable
       
       before_action :authorize_org_user!
-      before_action :set_campaign, only: [:show, :update, :destroy, :execute, :emails]
-      before_action :authorize_campaign_access!, only: [:show, :update, :destroy, :execute, :emails]
+      before_action :set_campaign, only: [:show, :update, :destroy, :execute, :monitor, :emails]
+      before_action :authorize_campaign_access!, only: [:show, :update, :destroy, :execute, :monitor, :emails]
       before_action :check_can_update!, only: [:update]
+      
+      # GET /api/v1/campaigns/templates
+      def templates
+        @templates = EmailTemplate.where(organization: current_user.organization)
+        
+        render json: {
+          templates: @templates.map { |t|
+            {
+              id: t.id,
+              name: t.name,
+              subject: t.subject,
+              body: t.body,
+              created_at: t.created_at,
+              updated_at: t.updated_at
+            }
+          }
+        }
+      end
       
       # GET /api/v1/campaigns
       def index
         @campaigns = Campaign.by_user(current_user.id)
+        @campaigns = @campaigns.with_discarded if params[:include_deleted] == 'true'
         @campaigns = @campaigns.search(params[:q]) if params[:q].present?
         @campaigns = @campaigns.by_status(params[:status]) if params[:status].present?
         @campaigns = @campaigns.page(params[:page]).per(params[:per_page] || 20)
@@ -144,6 +163,21 @@ module Api
         end
       end
       
+      # GET /api/v1/campaigns/:id/monitor
+      def monitor
+        stats = @campaign.campaign_statistic || @campaign.build_campaign_statistic
+        
+        render json: {
+          campaign_id: @campaign.id,
+          status: @campaign.status,
+          total_emails: stats.total_emails || 0,
+          sent_emails: stats.emails_sent || 0,
+          failed_emails: stats.emails_failed || 0,
+          pending_emails: (stats.total_emails || 0) - (stats.emails_sent || 0) - (stats.emails_failed || 0),
+          progress: stats.total_emails.to_i > 0 ? ((stats.emails_sent.to_f / stats.total_emails) * 100).round(2) : 0
+        }
+      end
+      
       # GET /api/v1/campaigns/:id/emails
       def emails
         @emails = @campaign.campaign_emails
@@ -195,13 +229,13 @@ module Api
       end
       
       def authorize_org_user!
-        unless current_user.org_admin? || current_user.org_user?
+        unless current_user.super_admin? || current_user.org_admin? || current_user.org_user?
           render json: { error: 'Unauthorized. Organization user access required.' }, status: :forbidden
         end
       end
       
       def authorize_campaign_access!
-        unless @campaign.created_by_id == current_user.id
+        unless current_user.super_admin? || @campaign.created_by_id == current_user.id
           render json: { error: 'Unauthorized. You can only access campaigns you created.' }, status: :forbidden
         end
       end
@@ -216,7 +250,7 @@ module Api
         errors = []
         errors << 'Campaign must be in created status' unless @campaign.created?
         errors << 'Campaign must have at least one audience' if @campaign.audiences.empty?
-        errors << 'Campaign must have an email template' unless @campaign.email_template.present?
+        errors << 'Campaign must have an email template or subject and body' unless @campaign.email_template.present? || (@campaign.subject.present? && @campaign.body.present?)
         errors
       end
       
@@ -224,6 +258,8 @@ module Api
         params.require(:campaign).permit(
           :name,
           :description,
+          :subject,
+          :body,
           :email_template_id,
           :scheduled_type,
           :scheduled_at,
@@ -243,6 +279,8 @@ module Api
           id: campaign.id,
           name: campaign.name,
           description: campaign.description,
+          subject: campaign.subject,
+          body: campaign.body,
           status: campaign.status,
           scheduled_type: campaign.scheduled_type,
           scheduled_at: campaign.scheduled_at,
@@ -250,7 +288,8 @@ module Api
           audience_ids: campaign.audiences.pluck(:id),
           audiences: campaign.audiences.map { |a| { id: a.id, name: a.name } },
           created_at: campaign.created_at,
-          updated_at: campaign.updated_at
+          updated_at: campaign.updated_at,
+          deleted_at: campaign.deleted_at
         }
         
         # Add recurring campaign fields if applicable

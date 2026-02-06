@@ -11,9 +11,16 @@ class CampaignContactsService
     audience_contacts = {}
     
     campaign.audiences.each do |audience|
-      contacts = AudienceQueryService.new(audience).contacts
+      # Get contacts from filters (dynamic)
+      filter_contacts = AudienceQueryService.new(audience).contacts
       
-      contacts.each do |contact|
+      # Get manually selected contacts from audience_contacts table
+      manual_contacts = audience.contacts
+      
+      # Combine both sets
+      all_contacts = (filter_contacts.to_a + manual_contacts.to_a).uniq
+      
+      all_contacts.each do |contact|
         unless contact_ids.include?(contact.id)
           contact_ids.add(contact.id)
           audience_contacts[contact.id] = {
@@ -37,7 +44,14 @@ class CampaignContactsService
     contacts = []
     
     Audience.where(id: audience_ids, organization: organization).each do |audience|
-      audience_contacts = AudienceQueryService.new(audience).contacts
+      # Get contacts from filters (dynamic)
+      filter_contacts = AudienceQueryService.new(audience).contacts
+      
+      # Get manually selected contacts from audience_contacts table
+      manual_contacts = audience.contacts
+      
+      # Combine both sets
+      audience_contacts = (filter_contacts.to_a + manual_contacts.to_a).uniq
       
       audience_contacts.each do |contact|
         unless contact_ids.include?(contact.id)

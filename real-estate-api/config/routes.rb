@@ -47,11 +47,13 @@ Rails.application.routes.draw do
       
       resources :campaigns do
         collection do
+          get :templates
           post :preview_contacts
         end
         
         member do
           post :execute
+          get :monitor
           get :emails
         end
       end

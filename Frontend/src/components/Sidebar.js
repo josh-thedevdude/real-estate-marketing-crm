@@ -13,6 +13,7 @@ const Sidebar = () => {
     { path: '/users', label: 'Users', icon: '👥' },
     { path: '/contacts', label: 'Contacts', icon: '📇' },
     { path: '/audiences', label: 'Audiences', icon: '🎯' },
+    { path: '/campaigns', label: 'Campaigns', icon: '📧' },
     { path: '/import-logs', label: 'Import Logs', icon: '📥' },
   ];
 
@@ -21,6 +22,7 @@ const Sidebar = () => {
     { path: '/users', label: 'Users', icon: '👥' },
     { path: '/contacts', label: 'Contacts', icon: '📇' },
     { path: '/audiences', label: 'Audiences', icon: '🎯' },
+    { path: '/campaigns', label: 'Campaigns', icon: '📧' },
     { path: '/import-logs', label: 'Import Logs', icon: '📥' },
   ];
 
@@ -28,6 +30,7 @@ const Sidebar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/contacts', label: 'Contacts', icon: '📇' },
     { path: '/audiences', label: 'Audiences', icon: '🎯' },
+    { path: '/campaigns', label: 'Campaigns', icon: '📧' },
   ];
 
   const getLinks = () => {

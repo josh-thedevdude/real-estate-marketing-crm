@@ -25,6 +25,9 @@ class Audience < ApplicationRecord
 
   has_many :campaign_audiences, dependent: :delete_all
   has_many :campaigns, through: :campaign_audiences
+  
+  has_many :audience_contacts, dependent: :delete_all
+  has_many :contacts, through: :audience_contacts
 
   # Validations
   validates :name,

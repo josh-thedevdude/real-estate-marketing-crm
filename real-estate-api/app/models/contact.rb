@@ -24,6 +24,9 @@ class Contact < ApplicationRecord
 
   # Associations
   belongs_to :created_by, class_name: 'User'
+  
+  has_many :audience_contacts, dependent: :delete_all
+  has_many :audiences, through: :audience_contacts
 
   # Validations  
   validates :first_name, length: { minimum: 3, maximum: 50 }

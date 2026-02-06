@@ -84,7 +84,7 @@ INSERT INTO users (
     updated_at
 )
 VALUES (
-    'superadmin@realestate.com',
+    'superadmin@gmail.com',
     '$2a$12$K.gF4bW8qN0rXHJK8zYxJ.XZH1tZ9vJ8qYkZL3mN2nP5qW7rT9uXS', -- Password: 'Password@123'
     0,  -- Role: 0 = Superadmin
     0,  -- Status: 0 = Active

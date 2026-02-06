@@ -35,6 +35,9 @@ module Api
         @audience.organization = current_user.organization
         
         if @audience.save
+          # Associate contacts if provided
+          sync_contacts if params[:contact_ids].present?
+          
           render json: {
             message: 'Audience created successfully',
             audience: audience_json(@audience, include_contact_count: true)
@@ -50,6 +53,9 @@ module Api
       # PATCH/PUT /api/v1/audiences/:id
       def update
         if @audience.update(audience_params)
+          # Update contacts if provided
+          sync_contacts if params[:contact_ids].present?
+          
           render json: {
             message: 'Audience updated successfully',
             audience: audience_json(@audience, include_contact_count: true)
@@ -112,13 +118,13 @@ module Api
       end
       
       def authorize_org_user!
-        unless current_user.org_admin? || current_user.org_user?
+        unless current_user.super_admin? || current_user.org_admin? || current_user.org_user?
           render json: { error: 'Unauthorized. Organization user access required.' }, status: :forbidden
         end
       end
       
       def authorize_audience_access!
-        unless @audience.created_by_id == current_user.id
+        unless current_user.super_admin? || @audience.created_by_id == current_user.id
           render json: { error: 'Unauthorized. You can only access audiences you created.' }, status: :forbidden
         end
       end
@@ -131,17 +137,40 @@ module Api
         )
       end
       
+      def sync_contacts
+        contact_ids = params[:contact_ids].is_a?(Array) ? params[:contact_ids] : [params[:contact_ids]]
+        contact_ids = contact_ids.map(&:to_i).compact
+        
+        # Validate all contacts belong to current user's organization
+        contacts = Contact.where(
+          id: contact_ids,
+          organization: current_user.organization
+        )
+        
+        if contacts.count != contact_ids.count
+          invalid_ids = contact_ids - contacts.pluck(:id)
+          @audience.errors.add(:base, "Invalid contact IDs: #{invalid_ids.join(', ')}")
+          return false
+        end
+        
+        @audience.contacts = contacts
+        true
+      end
+      
       def audience_json(audience, include_contact_count: false)
         json = {
           id: audience.id,
           name: audience.name,
           description: audience.description,
           filters: audience.filters,
+          contact_ids: audience.contact_ids,
+          contacts: audience.contacts.map { |c| { id: c.id, name: c.full_name, email: c.email } },
           created_at: audience.created_at,
-          updated_at: audience.updated_at
+          updated_at: audience.updated_at,
+          deleted_at: audience.deleted_at
         }
         
-        json[:contact_count] = audience.contact_count if include_contact_count
+        json[:contact_count] = audience.contacts.count if include_contact_count
         json
       end
       

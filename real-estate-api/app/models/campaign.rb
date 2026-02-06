@@ -25,12 +25,12 @@ class Campaign < ApplicationRecord
   # Enums
   enum :status, { created: 0, running: 1, completed: 2, failed: 3, partial: 4 }, default: :created
   enum :scheduled_type, { immediate: 0, scheduled: 1, recurring: 2 }, default: :scheduled
-  enum :recurrence_interval, {
-    daily: 0,
-    weekly: 1,
-    biweekly: 2,
-    monthly: 3
-  }, prefix: true
+  # enum :recurrence_interval, {
+  #   daily: 0,
+  #   weekly: 1,
+  #   biweekly: 2,
+  #   monthly: 3
+  # }, prefix: true
 
   # Associations
   belongs_to :organization
@@ -57,7 +57,7 @@ class Campaign < ApplicationRecord
   validates :status, presence: true
   
   # Recurring campaign validations
-  validates :recurrence_interval, presence: true, if: :recurring?
+  # validates :recurrence_interval, presence: true, if: :recurring?
   validate :recurrence_end_date_after_scheduled_at, if: :recurring?
   validate :max_occurrences_positive, if: :recurring?
 
@@ -89,7 +89,7 @@ class Campaign < ApplicationRecord
   end
   
   def can_execute?
-    created? && audiences.any? && email_template.present?
+    created? && audiences.any? && (email_template.present? || (subject.present? && body.present?))
   end
   
   def can_update?

@@ -22,6 +22,10 @@ const Users = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [viewingUser, setViewingUser] = useState(null);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterOrganization, setFilterOrganization] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -157,11 +161,17 @@ const Users = () => {
     });
   };
 
-  const roleOptions = [
-    { value: 'super_admin', label: 'Super Admin' },
-    { value: 'org_admin', label: 'Organization Admin' },
-    { value: 'org_user', label: 'Organization User' },
-  ];
+  // Role options based on current user's role
+  const roleOptions = isSuperAdmin(currentUser)
+    ? [
+        { value: 'super_admin', label: 'Super Admin' },
+        { value: 'org_admin', label: 'Organization Admin' },
+        { value: 'org_user', label: 'Organization User' },
+      ]
+    : [
+        { value: 'org_admin', label: 'Organization Admin' },
+        { value: 'org_user', label: 'Organization User' },
+      ];
 
   const statusOptions = [
     { value: 'active', label: 'Active' },
@@ -227,6 +237,24 @@ const Users = () => {
     },
   ];
 
+  // Filter and search logic
+  const filteredUsers = users.filter(user => {
+    // Search filter (email)
+    const matchesSearch = user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Role filter
+    const matchesRole = !filterRole || user.role === filterRole;
+    
+    // Status filter
+    const matchesStatus = !filterStatus || user.status === filterStatus;
+    
+    // Organization filter
+    const matchesOrganization = !filterOrganization || 
+      (user.organization_id && user.organization_id.toString() === filterOrganization);
+    
+    return matchesSearch && matchesRole && matchesStatus && matchesOrganization;
+  });
+
   const actionColumn = {
     key: 'view',
     label: 'View',
@@ -261,7 +289,122 @@ const Users = () => {
     <div>
       <h1 className="page-title">Users</h1>
       
-      <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Filters and Search Section */}
+      <Card style={{ marginBottom: '1.5rem', padding: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          {/* Search Bar */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+              Search by Email
+            </label>
+            <input
+              type="text"
+              placeholder="Search email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '0.875rem'
+              }}
+            />
+          </div>
+
+          {/* Role Filter */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+              Filter by Role
+            </label>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '0.875rem',
+                backgroundColor: 'white'
+              }}
+            >
+              <option value="">All Roles</option>
+              <option value="super_admin">Super Admin</option>
+              <option value="org_admin">Org Admin</option>
+              <option value="org_user">Org User</option>
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+              Filter by Status
+            </label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '0.875rem',
+                backgroundColor: 'white'
+              }}
+            >
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          {/* Organization Filter (only for super admin) */}
+          {isSuperAdmin(currentUser) && (
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+                Filter by Organization
+              </label>
+              <select
+                value={filterOrganization}
+                onChange={(e) => setFilterOrganization(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '0.875rem',
+                  backgroundColor: 'white'
+                }}
+              >
+                <option value="">All Organizations</option>
+                {organizations.map(org => (
+                  <option key={org.id} value={org.id}>{org.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Clear Filters Button */}
+        {(searchTerm || filterRole || filterStatus || filterOrganization) && (
+          <Button
+            onClick={() => {
+              setSearchTerm('');
+              setFilterRole('');
+              setFilterStatus('');
+              setFilterOrganization('');
+            }}
+            variant="secondary"
+            style={{ marginTop: '1rem' }}
+          >
+            Clear Filters
+          </Button>
+        )}
+      </Card>
+      
+      {/* Actions Section */}
+      <div style={{ marginTop: '2rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
           <input
             type="checkbox"
@@ -273,7 +416,7 @@ const Users = () => {
         </label>
         
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {isSuperAdmin(currentUser) && (
+          {(isSuperAdmin(currentUser) || currentUser?.role === 'org_admin') && (
             <Button 
               onClick={() => {
                 setFormData({ ...formData, role: 'org_admin' });
@@ -300,7 +443,7 @@ const Users = () => {
       <Card>
         <Table
           columns={displayColumns}
-          data={users}
+          data={filteredUsers}
           loading={loading}
           onEdit={handleEditWrapper}
           onDelete={handleDeleteWrapper}

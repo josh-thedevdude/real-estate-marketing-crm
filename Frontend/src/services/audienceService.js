@@ -12,12 +12,20 @@ const audienceService = {
   },
 
   create: async (data) => {
-    const response = await api.post('/audiences', { audience: data });
+    const { contact_ids, ...audienceData } = data;
+    const response = await api.post('/audiences', { 
+      audience: audienceData,
+      contact_ids: contact_ids 
+    });
     return response.data.audience;
   },
 
   update: async (id, data) => {
-    const response = await api.put(`/audiences/${id}`, { audience: data });
+    const { contact_ids, ...audienceData } = data;
+    const response = await api.put(`/audiences/${id}`, { 
+      audience: audienceData,
+      contact_ids: contact_ids 
+    });
     return response.data.audience;
   },
 

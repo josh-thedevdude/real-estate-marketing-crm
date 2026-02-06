@@ -11,6 +11,7 @@ import Organizations from './pages/Organizations';
 import Users from './pages/Users';
 import Contacts from './pages/Contacts';
 import Audiences from './pages/Audiences';
+import Campaigns from './pages/Campaigns';
 import ImportLogs from './pages/ImportLogs';
 import Unauthorized from './pages/Unauthorized';
 import { ROLES } from './utils/constants';
@@ -75,6 +76,17 @@ function App() {
               <PrivateRoute>
                 <Layout>
                   <Audiences />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          
+          <Route
+            path="/campaigns"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <Campaigns />
                 </Layout>
               </PrivateRoute>
             }

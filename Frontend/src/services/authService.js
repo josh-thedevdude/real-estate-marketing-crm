@@ -11,13 +11,15 @@ const authService = {
   },
 
   logout: async () => {
+    // Clear localStorage first
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
     try {
       await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      // Even if logout fails, we've already cleared local storage
     }
   },
 
