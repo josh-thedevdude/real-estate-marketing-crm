@@ -59,7 +59,7 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 
   # Load environment variables from .env file [https://github.com/bkeepers/dotenv]
-  gem "dotenv-rails"
+  gem "dotenv-rails", groups: [:development, :test]
 
   gem 'annotate'
 end
