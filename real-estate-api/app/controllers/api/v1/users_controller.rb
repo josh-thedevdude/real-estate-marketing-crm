@@ -4,17 +4,22 @@ module Api
       include Authenticatable
       
       before_action :set_user, only: [:show, :update, :destroy]
-      before_action :authorize_user_access!, only: [:show, :update]
+      before_action :authorize_user_access!, only: [:show, :update, :destroy]
       before_action :authorize_user_management!, only: [:index, :create]
-      before_action :authorize_user_deletion!, only: [:destroy]
 
       # GET /api/v1/users
       def index
         @users = fetch_users_by_role
+        
+        # Pagination
+        @users = Kaminari.paginate_array(@users).page(params[:page]).per(params[:per_page] || 20)
 
         render json: {
           users: @users.map { |user| user_json(user) },
-          total: @users.count
+          total: @users.total_count,
+          page: @users.current_page,
+          per_page: @users.limit_value,
+          total_pages: @users.total_pages
         }, status: :ok
       end
 
@@ -65,6 +70,16 @@ module Api
 
       # PATCH/PUT /api/v1/users/:id
       def update
+        # no user can update their role to super_admin
+        if params[:user][:role].present?
+          if params[:user][:role] == "super_admin"
+            render json: {
+              error: 'Unauthorized to update user role'
+            }, status: :forbidden
+            return
+          end
+        end 
+          
         if @user.update(user_update_params)
           render json: {
             message: 'User updated successfully',
@@ -104,7 +119,8 @@ module Api
         end
 
         @user = ActsAsTenant.without_tenant do
-          User.unscoped.find_by(invitation_token: token)
+          # User.unscoped.find_by(invitation_token: token)
+          User.kept.find_by(invitation_token: token)
         end
 
         unless @user
@@ -157,16 +173,10 @@ module Api
 
       def set_user
         @user = ActsAsTenant.without_tenant do
-          base_query = if params[:include_deleted] == 'true'
-            User.unscoped
-          else
-            User.kept
-          end
-
           if current_user.super_admin?
-            base_query.find_by(id: params[:id])
+            User.kept.find_by(id: params[:id])
           else
-            base_query.find_by(id: params[:id], organization_id: current_user.organization_id)
+            User.kept.find_by(id: params[:id], organization_id: current_user.organization_id)
           end
         end
 
@@ -179,30 +189,25 @@ module Api
 
       def fetch_users_by_role
         ActsAsTenant.without_tenant do
-          base_query = if params[:include_deleted] == 'true'
-            User.unscoped
-          else
-            User.kept
-          end
-
           # Super admin can see users they created
-          # Org admin can see users they created in their organization
           if current_user.super_admin?
-            base_query.where(created_by_id: current_user.id).order(created_at: :desc)
+            User.kept.where(created_by_id: current_user.id).order(created_at: :desc)
+          # Org admin can see users they created in their organization
           elsif current_user.org_admin?
-            base_query.where(
+            User.kept.where(
               created_by_id: current_user.id,
               organization_id: current_user.organization_id
             ).order(created_at: :desc)
           else
             # Org users cannot list other users
-            base_query.where(id: current_user.id)
+            # User.kept.where(id: current_user.id)
+            []
           end
         end
       end
 
       def authorize_user_access!
-        # Users can access their own profile
+        # user can access himself
         return if @user.id == current_user.id
         
         # Super admin can access users they created
@@ -219,37 +224,12 @@ module Api
       end
 
       def authorize_user_management!
+        # org_users cannot create users
         unless current_user.super_admin? || current_user.org_admin?
           render json: {
             error: 'Unauthorized. Admin access required.'
           }, status: :forbidden
         end
-      end
-
-      def authorize_user_deletion!
-        # Users cannot delete themselves
-        if @user.id == current_user.id
-          render json: {
-            error: 'You cannot delete your own account'
-          }, status: :forbidden
-          return
-        end
-
-        # Super admin can only delete users they created
-        if current_user.super_admin? && @user.created_by_id == current_user.id
-          return
-        end
-
-        # Org admin can only delete users they created in their organization
-        if current_user.org_admin? && 
-           @user.created_by_id == current_user.id && 
-           @user.organization_id == current_user.organization_id
-          return
-        end
-
-        render json: {
-          error: 'Unauthorized. You can only delete users you created.'
-        }, status: :forbidden
       end
 
       def can_create_user_with_role?
@@ -264,12 +244,12 @@ module Api
       end
 
       def user_update_params
-        # Users can only update their own email
-        # Admins can update role and status
-        if current_user.super_admin? || current_user.org_admin?
-          params.require(:user).permit(:email, :role, :status)
-        else
+        # current user can only change his email
+        if @user.id == current_user.id 
           params.require(:user).permit(:email)
+        # super admin and org admin can update role of the users they have created
+        elsif current_user.super_admin? || current_user.org_admin?
+          params.require(:user).permit(:role)
         end
       end
 

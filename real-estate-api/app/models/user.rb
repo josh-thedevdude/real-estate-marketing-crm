@@ -123,6 +123,7 @@ class User < ApplicationRecord
 
   # Check if user can create users with specific role for an organization
   def can_create_user?(target_role, target_organization_id)
+    # only active user can create users
     return false unless active?
     
     if super_admin?

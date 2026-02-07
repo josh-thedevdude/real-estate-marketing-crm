@@ -11,21 +11,23 @@
 
 class Organization < ApplicationRecord
   include Discard::Model
-  self.discard_column = :deleted_at # allows for soft delete
+  self.discard_column = :deleted_at
   
+  # Callbacks
   before_validation :normalize_name
   
   # Associations
-  has_many :users, dependent: :delete_all       # delete all users when organization is deleted
-  has_many :contacts, dependent: :delete_all    # delete all contacts when organization is deleted
-  has_many :audiences, dependent: :delete_all   # delete all audiences when organization is deleted
-  has_many :campaigns, dependent: :delete_all   # delete all campaigns when organization is deleted
+  # has_many :users, dependent: :delete_all
+  has_many :users, dependent: :destroy
+  has_many :contacts, dependent: :destroy
+  has_many :audiences, dependent: :destroy
+  has_many :campaigns, dependent: :destroy
   
   # Validations
-  validates :name, presence: true, uniqueness: true, length: {minimum: 3, maximum: 50} # name must be unique
+  validates :name, presence: true, uniqueness: true, length: {minimum: 3, maximum: 50}
 
   # Scopes
-  default_scope { kept } # default scope to show only non-deleted records
+  default_scope { kept }
 
   private
 

@@ -3,24 +3,30 @@ module Api
     class OrganizationsController < ApplicationController
       include Authenticatable
       
+      # only super admin can manage organizations
       before_action :authorize_super_admin!
+      # DRY
       before_action :set_organization, only: [:show, :update, :destroy]
 
       # GET /api/v1/organizations
       def index
-        # Super admin can see all non-deleted organizations
-        # Use .unscoped to also include soft-deleted organizations if needed
         @organizations = ActsAsTenant.without_tenant do
-          if params[:include_deleted] == 'true'
-            Organization.unscoped.order(created_at: :desc)
-          else
+          # if params[:include_deleted] == 'true'
+          #   Organization.unscoped.order(created_at: :desc)
+          # else
             Organization.order(created_at: :desc)
-          end
+          # end
         end
+        
+        # Pagination
+        @organizations = @organizations.page(params[:page]).per(params[:per_page] || 20)
 
         render json: {
           organizations: @organizations.map { |org| organization_json(org) },
-          total: @organizations.count
+          total: @organizations.total_count,
+          page: @organizations.current_page,
+          per_page: @organizations.limit_value,
+          total_pages: @organizations.total_pages
         }, status: :ok
       end
 
@@ -65,6 +71,7 @@ module Api
 
       # DELETE /api/v1/organizations/:id
       def destroy
+        # soft delete
         if @organization.discard
           render json: {
             message: 'Organization deleted successfully'
@@ -80,7 +87,8 @@ module Api
 
       def set_organization
         @organization = ActsAsTenant.without_tenant do
-          Organization.unscoped.find_by(id: params[:id])
+          # Organization.unscoped.find_by(id: params[:id])
+          Organization.find_by(id: params[:id])
         end
 
         unless @organization
@@ -95,7 +103,7 @@ module Api
       end
 
       def organization_json(organization)
-        # Wrap counts in without_tenant to avoid NoTenantSet errors
+        # Organization metadata
         counts = ActsAsTenant.without_tenant do
           {
             users_count: organization.users.count,
@@ -105,6 +113,7 @@ module Api
           }
         end
 
+        # Organization Response
         {
           id: organization.id,
           name: organization.name,
