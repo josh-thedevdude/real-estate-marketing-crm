@@ -27,39 +27,9 @@ class AudienceQueryService
       query = query.where("preferences->>'contact_type' = ?", filters['contact_type'])
     end
     
-    # Min budget range filter
-    if filters['min_budget_range'].present? && filters['min_budget_range'].is_a?(Array)
-      min_val, max_val = filters['min_budget_range']
-      if min_val.present? && max_val.present?
-        query = query.where(
-          "(preferences->>'min_budget')::integer BETWEEN ? AND ?",
-          min_val, max_val
-        )
-      elsif min_val.present?
-        query = query.where("(preferences->>'min_budget')::integer >= ?", min_val)
-      elsif max_val.present?
-        query = query.where("(preferences->>'min_budget')::integer <= ?", max_val)
-      end
-    end
-    
-    # Max budget range filter
-    if filters['max_budget_range'].present? && filters['max_budget_range'].is_a?(Array)
-      min_val, max_val = filters['max_budget_range']
-      if min_val.present? && max_val.present?
-        query = query.where(
-          "(preferences->>'max_budget')::integer BETWEEN ? AND ?",
-          min_val, max_val
-        )
-      elsif min_val.present?
-        query = query.where("(preferences->>'max_budget')::integer >= ?", min_val)
-      elsif max_val.present?
-        query = query.where("(preferences->>'max_budget')::integer <= ?", max_val)
-      end
-    end
-    
     # Property locations filter (array overlap)
     if filters['property_locations'].present? && filters['property_locations'].is_a?(Array)
-      # Check if any of the filter locations exist in the contact's property_location array
+      # Check if any of the filter locations exist in the contact's property_locations array
       query = query.where(
         "preferences->'property_locations' ?| array[:locations]",
         locations: filters['property_locations']
@@ -74,12 +44,19 @@ class AudienceQueryService
       )
     end
     
-    # Timelines filter
-    if filters['timelines'].present? && filters['timelines'].is_a?(Array)
-      query = query.where(
-        "preferences->>'timeline' IN (?)",
-        filters['timelines']
-      )
+    # Timeline filter
+    if filters['timeline'].present?
+      query = query.where("preferences->>'timeline' = ?", filters['timeline'])
+    end
+    
+    # Min budget filter
+    if filters['min_budget'].present?
+      query = query.where("(preferences->>'min_budget')::integer >= ?", filters['min_budget'])
+    end
+    
+    # Max budget filter
+    if filters['max_budget'].present?
+      query = query.where("(preferences->>'max_budget')::integer <= ?", filters['max_budget'])
     end
     
     query

@@ -127,7 +127,14 @@ module Api
         params.require(:audience).permit(
           :name,
           :description,
-          filters: {}
+          filters: [
+            :contact_type,
+            :timeline,
+            :min_budget,
+            :max_budget,
+            property_locations: [],
+            property_types: []
+          ]
         )
       end
       
