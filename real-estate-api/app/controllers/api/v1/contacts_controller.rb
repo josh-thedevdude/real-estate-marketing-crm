@@ -122,6 +122,7 @@ module Api
       end
       
       def authorize_org_user!
+        # contacts are organization scoped
         unless current_user.org_admin? || current_user.org_user?
           render json: { error: 'Unauthorized. Organization user access required.' }, status: :forbidden
         end
@@ -139,7 +140,14 @@ module Api
           :last_name,
           :email,
           :phone,
-          preferences: {}
+          preferences: [
+            :contact_type,
+            :min_budget,
+            :max_budget,
+            :timeline,
+            property_locations: [],
+            property_types: []
+          ]
         )
       end
       
