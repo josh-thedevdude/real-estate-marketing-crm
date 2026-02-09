@@ -6,10 +6,16 @@ class AudienceQueryService
   end
   
   def contacts
+    # Audience Should belong to some organization
     return Contact.none unless audience.organization
     
+    # tenant isolation
     query = Contact.where(organization: audience.organization)
+
+    # apply filters
     query = apply_filters(query, audience.filters)
+
+    # return query
     query
   end
   
@@ -20,6 +26,7 @@ class AudienceQueryService
   private
   
   def apply_filters(query, filters)
+    # All Contacts If Blank Filters
     return query if filters.blank?
     
     # Contact type filter
@@ -59,6 +66,7 @@ class AudienceQueryService
       query = query.where("(preferences->>'max_budget')::integer <= ?", filters['max_budget'])
     end
     
+    # Return the query
     query
   end
 end

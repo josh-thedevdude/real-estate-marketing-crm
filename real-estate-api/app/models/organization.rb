@@ -1,14 +1,3 @@
-# == Schema Information
-#
-# Table name: organizations
-#
-#  id         :integer          not null, primary key
-#  created_at :datetime         not null
-#  deleted_at :datetime
-#  name       :string           not null
-#  updated_at :datetime         not null
-#
-
 class Organization < ApplicationRecord
   include Discard::Model
   self.discard_column = :deleted_at
@@ -17,7 +6,6 @@ class Organization < ApplicationRecord
   before_validation :normalize_name
   
   # Associations
-  # has_many :users, dependent: :delete_all
   has_many :users, dependent: :destroy
   has_many :contacts, dependent: :destroy
   has_many :audiences, dependent: :destroy
