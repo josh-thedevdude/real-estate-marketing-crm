@@ -119,8 +119,7 @@ module Api
         end
 
         @user = ActsAsTenant.without_tenant do
-          # User.unscoped.find_by(invitation_token: token)
-          User.kept.find_by(invitation_token: token)
+          User.find_by(invitation_token: token)
         end
 
         unless @user
@@ -174,9 +173,9 @@ module Api
       def set_user
         @user = ActsAsTenant.without_tenant do
           if current_user.super_admin?
-            User.kept.find_by(id: params[:id])
+            User.find_by(id: params[:id])
           else
-            User.kept.find_by(id: params[:id], organization_id: current_user.organization_id)
+            User.find_by(id: params[:id], organization_id: current_user.organization_id)
           end
         end
 
@@ -191,16 +190,16 @@ module Api
         ActsAsTenant.without_tenant do
           # Super admin can see users they created
           if current_user.super_admin?
-            User.kept.where(created_by_id: current_user.id).order(created_at: :desc)
+            User.where(created_by_id: current_user.id).order(created_at: :desc)
           # Org admin can see users they created in their organization
           elsif current_user.org_admin?
-            User.kept.where(
+            User.where(
               created_by_id: current_user.id,
               organization_id: current_user.organization_id
             ).order(created_at: :desc)
           else
             # Org users cannot list other users
-            # User.kept.where(id: current_user.id)
+            # User.where(id: current_user.id)
             []
           end
         end

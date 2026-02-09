@@ -3,14 +3,14 @@ require 'csv'
 class ContactImportJob < ApplicationJob
   queue_as :default
   
-  REQUIRED_HEADERS = %w[first_name last_name email].freeze
+  REQUIRED_HEADERS = %w[first_name last_name email phone].freeze
   PREFERENCE_COLUMNS = %w[contact_type min_budget max_budget property_locations property_types timeline].freeze
   
   # Valid enum values
-  CONTACT_TYPES = %w[buyer seller renter].freeze
+  CONTACT_TYPES = %w[buyer seller].freeze
   PROPERTY_LOCATIONS = %w[baner wakad hinjewadi kharadi hadapsar wagholi kondhwa undri ravet moshi pimpri chinchwad akurdi].freeze
   PROPERTY_TYPES = %w[apartment villa plot commercial 1bhk 2bhk 3bhk 4bhk].freeze
-  TIMELINES = %w[0-3 3-6 6-9 9-12].freeze
+  TIMELINES = %w[immediately within_3_months within_6_months within_12_months].freeze
   
   def perform(import_log_id, file_path)
     import_log = ContactImportLog.find(import_log_id)

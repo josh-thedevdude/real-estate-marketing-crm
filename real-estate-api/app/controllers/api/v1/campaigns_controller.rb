@@ -4,8 +4,8 @@ module Api
       include Authenticatable
       
       before_action :authorize_org_user!
-      before_action :set_campaign, only: [:show, :update, :destroy, :execute, :emails]
-      before_action :authorize_campaign_access!, only: [:show, :update, :destroy, :execute, :emails]
+      before_action :set_campaign, only: [:show, :update, :destroy, :emails]
+      before_action :authorize_campaign_access!, only: [:show, :update, :destroy, :emails]
       before_action :check_can_update!, only: [:update]
       
       # GET /api/v1/campaigns
@@ -19,7 +19,8 @@ module Api
           campaigns: @campaigns.map { |c| campaign_json(c) },
           total: @campaigns.total_count,
           page: @campaigns.current_page,
-          per_page: @campaigns.limit_value
+          per_page: @campaigns.limit_value,
+          total_pages: @campaigns.total_pages
         }
       end
       
@@ -36,30 +37,7 @@ module Api
         @campaign.created_by = current_user
         @campaign.organization = current_user.organization
         
-        if @campaign.save
-          # Associate audiences with validation
-          audience_ids = permitted_audience_ids
-          if audience_ids.present?
-            audiences = Audience.where(
-              id: audience_ids,
-              organization: current_user.organization,
-              created_by: current_user
-            )
-            
-            # Check if all provided audience IDs were found
-            if audiences.count != audience_ids.count
-              invalid_ids = audience_ids - audiences.pluck(:id)
-              @campaign.destroy
-              render json: {
-                error: 'Invalid audience IDs',
-                message: "Audience IDs #{invalid_ids.join(', ')} do not exist or do not belong to you"
-              }, status: :unprocessable_entity
-              return
-            end
-            
-            @campaign.audiences << audiences
-          end
-          
+        if @campaign.save          
           render json: {
             message: 'Campaign created successfully',
             campaign: campaign_json(@campaign)
@@ -74,29 +52,7 @@ module Api
       
       # PATCH/PUT /api/v1/campaigns/:id
       def update
-        if @campaign.update(campaign_params)
-          # Update audiences if provided with validation
-          audience_ids = permitted_audience_ids
-          if audience_ids.present?
-            audiences = Audience.where(
-              id: audience_ids,
-              organization: current_user.organization,
-              created_by: current_user
-            )
-            
-            # Check if all provided audience IDs were found
-            if audiences.count != audience_ids.count
-              invalid_ids = audience_ids - audiences.pluck(:id)
-              render json: {
-                error: 'Invalid audience IDs',
-                message: "Audience IDs #{invalid_ids.join(', ')} do not exist or do not belong to you"
-              }, status: :unprocessable_entity
-              return
-            end
-            
-            @campaign.audiences = audiences
-          end
-          
+        if @campaign.update(campaign_params)     
           render json: {
             message: 'Campaign updated successfully',
             campaign: campaign_json(@campaign)
@@ -122,28 +78,6 @@ module Api
         end
       end
       
-      # POST /api/v1/campaigns/:id/execute
-      def execute
-        unless @campaign.can_execute?
-          render json: {
-            error: 'Campaign cannot be executed',
-            reasons: execution_errors
-          }, status: :unprocessable_entity
-          return
-        end
-        
-        if CampaignExecutionService.new(@campaign).prepare!
-          render json: {
-            message: 'Campaign execution started',
-            campaign: campaign_json(@campaign, include_stats: true)
-          }
-        else
-          render json: {
-            error: 'Failed to start campaign execution'
-          }, status: :unprocessable_entity
-        end
-      end
-      
       # GET /api/v1/campaigns/:id/emails
       def emails
         @emails = @campaign.campaign_emails
@@ -154,7 +88,8 @@ module Api
           campaign_emails: @emails.map { |e| email_json(e) },
           total: @emails.total_count,
           page: @emails.current_page,
-          per_page: @emails.limit_value
+          per_page: @emails.limit_value,
+          total_pages: @emails.total_pages
         }
       end
       
@@ -230,13 +165,14 @@ module Api
           :recurrence_interval,
           :recurrence_end_date,
           :max_occurrences,
+          audience_ids: [],
           custom_variables: {}
         )
       end
       
-      def permitted_audience_ids
-        params.permit(audience_ids: [])[:audience_ids] || []
-      end
+      # def permitted_audience_ids
+      #   params.permit(audience_ids: [])[:audience_ids] || []
+      # end
       
       def campaign_json(campaign, include_stats: false)
         json = {
@@ -265,9 +201,9 @@ module Api
           json[:statistics] = {
             total_contacts: campaign.total_contacts,
             emails_sent: campaign.emails_sent,
-            emails_failed: campaign.campaign_statistic.emails_failed,
+            emails_failed: campaign.emails_failed,
             success_rate: campaign.success_rate,
-            last_sent_at: campaign.campaign_statistic.last_sent_at
+            last_sent_at: campaign.last_sent_at
           }
         end
         

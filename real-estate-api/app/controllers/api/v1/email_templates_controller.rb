@@ -19,7 +19,8 @@ module Api
           email_templates: @templates.map { |t| template_json(t) },
           total: @templates.total_count,
           page: @templates.current_page,
-          per_page: @templates.limit_value
+          per_page: @templates.limit_value,
+          total_pages: @templates.total_pages
         }
       end
       

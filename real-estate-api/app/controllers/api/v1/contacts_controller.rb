@@ -17,7 +17,8 @@ module Api
           contacts: @contacts.map { |c| contact_json(c) },
           total: @contacts.total_count,
           page: @contacts.current_page,
-          per_page: @contacts.limit_value
+          per_page: @contacts.limit_value,
+          total_pages: @contacts.total_pages
         }
       end
       

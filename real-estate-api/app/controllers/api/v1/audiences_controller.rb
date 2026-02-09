@@ -17,7 +17,8 @@ module Api
           audiences: @audiences.map { |a| audience_json(a) },
           total: @audiences.total_count,
           page: @audiences.current_page,
-          per_page: @audiences.limit_value
+          per_page: @audiences.limit_value,
+          total_pages: @audiences.total_pages
         }
       end
       
@@ -81,7 +82,7 @@ module Api
         temp_audience = Audience.new(
           filters: filters,
           organization: current_user.organization,
-          name: 'temp',
+          name: 'preview',
           created_by: current_user
         )
         

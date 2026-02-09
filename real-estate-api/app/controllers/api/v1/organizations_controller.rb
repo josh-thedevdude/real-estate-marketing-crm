@@ -5,17 +5,12 @@ module Api
       
       # only super admin can manage organizations
       before_action :authorize_super_admin!
-      # DRY
       before_action :set_organization, only: [:show, :update, :destroy]
 
       # GET /api/v1/organizations
       def index
         @organizations = ActsAsTenant.without_tenant do
-          # if params[:include_deleted] == 'true'
-          #   Organization.unscoped.order(created_at: :desc)
-          # else
-            Organization.order(created_at: :desc)
-          # end
+          Organization.order(created_at: :desc)
         end
         
         # Pagination
@@ -87,7 +82,6 @@ module Api
 
       def set_organization
         @organization = ActsAsTenant.without_tenant do
-          # Organization.unscoped.find_by(id: params[:id])
           Organization.find_by(id: params[:id])
         end
 

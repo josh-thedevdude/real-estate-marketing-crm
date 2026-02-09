@@ -69,9 +69,8 @@ module Api
       def find_user_by_email(email)
         return nil if email.blank?
 
-        # Try to find user without tenant first (for super_admin)
         user = ActsAsTenant.without_tenant do
-          User.unscoped.find_by(email: email.downcase.strip)
+          User.find_by(email: email.downcase.strip)
         end
 
         user
@@ -91,9 +90,9 @@ module Api
       end
 
       # Override from Authenticatable concern to make endpoints public by default
-      def public_endpoint?
-        action_name == 'login'
-      end
+      # def public_endpoint?
+      #   action_name == 'login'
+      # end
     end
   end
 end

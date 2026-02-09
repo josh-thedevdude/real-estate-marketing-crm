@@ -51,7 +51,6 @@ Rails.application.routes.draw do
         end
         
         member do
-          post :execute
           get :emails
         end
       end

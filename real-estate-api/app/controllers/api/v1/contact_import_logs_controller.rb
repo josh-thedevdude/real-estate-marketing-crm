@@ -16,7 +16,8 @@ module Api
           import_logs: @logs.map { |log| import_log_json(log) },
           total: @logs.total_count,
           page: @logs.current_page,
-          per_page: @logs.limit_value
+          per_page: @logs.limit_value,
+          total_pages: @logs.total_pages
         }
       end
       
