@@ -90,9 +90,9 @@ module Api
       end
 
       # Override from Authenticatable concern to make endpoints public by default
-      # def public_endpoint?
-      #   action_name == 'login'
-      # end
+      def public_endpoint?
+        action_name == 'login'
+      end
     end
   end
 end

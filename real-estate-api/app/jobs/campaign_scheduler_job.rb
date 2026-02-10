@@ -2,7 +2,7 @@ class CampaignSchedulerJob < ApplicationJob
   queue_as :default
   
   def perform
-    Rails.logger.info("Campaign Scheduler: Starting...")
+    Rails.logger.info("\n\n\n\nCampaign Scheduler: Starting...")
     
     total_campaigns = 0
     

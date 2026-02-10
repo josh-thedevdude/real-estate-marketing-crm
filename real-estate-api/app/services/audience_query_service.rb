@@ -10,7 +10,7 @@ class AudienceQueryService
     return Contact.none unless audience.organization
     
     # tenant isolation
-    query = Contact.where(organization: audience.organization)
+    query = Contact.where(organization: audience.organization, created_by: audience.created_by)
 
     # apply filters
     query = apply_filters(query, audience.filters)

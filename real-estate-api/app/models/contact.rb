@@ -9,7 +9,7 @@ class Contact < ApplicationRecord
   CONTACT_TYPES = %w[buyer seller].freeze
   PROPERTY_LOCATIONS = %w[
     baner wakad hinjewadi kharadi hadapsar wagholi 
-    kondhwa undri ravet moshi pimpri_chinchwad akurdi
+    kondhwa undri ravet moshi pimpri chinchwad akurdi
   ].freeze
   PROPERTY_TYPES = %w[
     apartment villa plot commercial 

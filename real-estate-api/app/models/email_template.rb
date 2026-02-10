@@ -13,7 +13,7 @@ class EmailTemplate < ApplicationRecord
   # Validations
   validates :name, presence: true,
             uniqueness: {
-              scope: [:organization_id, :deleted_at],
+              scope: [:organization_id, :created_by_id],
               conditions: -> { where(deleted_at: nil) }
             },
             length: { minimum: 3, maximum: 100 }

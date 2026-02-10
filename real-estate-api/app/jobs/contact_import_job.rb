@@ -10,7 +10,7 @@ class ContactImportJob < ApplicationJob
   CONTACT_TYPES = %w[buyer seller].freeze
   PROPERTY_LOCATIONS = %w[baner wakad hinjewadi kharadi hadapsar wagholi kondhwa undri ravet moshi pimpri chinchwad akurdi].freeze
   PROPERTY_TYPES = %w[apartment villa plot commercial 1bhk 2bhk 3bhk 4bhk].freeze
-  TIMELINES = %w[immediately within_3_months within_6_months within_12_months].freeze
+  TIMELINES = %w[immediate within_3_months within_6_months within_12_months].freeze
   
   def perform(import_log_id, file_path)
     import_log = ContactImportLog.find(import_log_id)
