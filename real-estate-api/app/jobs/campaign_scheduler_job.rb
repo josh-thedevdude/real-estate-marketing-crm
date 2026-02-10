@@ -51,6 +51,7 @@ class CampaignSchedulerJob < ApplicationJob
     
     # Create new campaign for next execution
     new_campaign = campaign.dup
+    new_campaign.name = "#{campaign.name} - #{campaign.occurrence_count + 1}"
     new_campaign.scheduled_at = next_scheduled_at
     new_campaign.status = :created
     new_campaign.occurrence_count = campaign.occurrence_count # Will be incremented on execution

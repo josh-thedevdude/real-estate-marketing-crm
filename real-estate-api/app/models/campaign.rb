@@ -9,10 +9,12 @@ class Campaign < ApplicationRecord
   enum :status, { created: 0, running: 1, completed: 2, failed: 3, partial: 4 }, default: :created
   enum :scheduled_type, { immediate: 0, scheduled: 1, recurring: 2 }, default: :immediate
   enum :recurrence_interval, {
-    daily: 0,
-    weekly: 1,
-    biweekly: 2,
-    monthly: 3
+    minutely: 0,
+    hourly: 1,
+    daily: 2,
+    weekly: 3,
+    biweekly: 4,
+    monthly: 5
   }, prefix: true
 
   # Associations
@@ -25,34 +27,45 @@ class Campaign < ApplicationRecord
   has_one :campaign_statistic, dependent: :destroy
   
   # Validations
-  validates :name, presence: true, 
-          uniqueness: {
-            scope: [:organization_id, :deleted_at],
-            conditions: -> { where(deleted_at: nil) }
-          },
-          length: { minimum: 3, maximum: 100 }
+  # campaign should be present and unique for a user within an organization
+  validates :name, presence: true, uniqueness: { scope: [:organization_id, :created_by_id], conditions: -> { where(deleted_at: nil) } }, 
+            length: { minimum: 3, maximum: 100 }
+  # validate description if present
   validates :description, length: { minimum: 10, maximum: 255 }, allow_blank: true
-  # validates :organization, presence: true
+  # campaign should be associated with an organization
+  validates :organization, presence: true
+  # campaign should be created by a user
+  validates :created_by, presence: true
+  # campaign should have a scheduled type
   validates :scheduled_type, presence: true
+  # campaign should have a scheduled time if scheduled or recurring
   validates :scheduled_at, presence: true, if: -> { scheduled? || recurring? }
-  
-  # Recurring campaign validations
+  # recurring campaign should have a recurrence interval
   validates :recurrence_interval, presence: true, if: :recurring?
-  validate :recurrence_end_date_after_scheduled_at, if: :recurring?
+  # should be scheduled after the current time for scheduled and recurring campaigns
+  validate :recurrence_end_date_after_scheduled_at, if: :recurring? 
+  # todo handle recurring campaigns based on end date
   validate :max_occurrences_positive, if: :recurring?
   
-  # Ownership validations
+  # email template should belong to the user
   validate :email_template_belongs_to_user
+  # audiences should belong to the user
   validate :audiences_belong_to_user
 
   # Scopes
+  # ignore deleted campaigns
   default_scope { kept }
+  # campaigns created by specific user
   scope :by_user, ->(user_id) { where(created_by_id: user_id) }
+  # search campaign by specific query
   scope :search, ->(query) {
     where("name ILIKE ? OR description ILIKE ?", "%#{query}%", "%#{query}%")
   }
+  # campaigns with specific status
   scope :by_status, ->(status) { where(status: status) }
+  # campaigns scheduled between specific time
   scope :scheduled_between, ->(start_time, end_time) { where(scheduled_at: start_time..end_time) }
+  # select due campaigns for execution
   scope :due_for_execution, -> {
     where(status: :created)
       .where("scheduled_at IS NULL OR scheduled_at <= ?", Time.current)
@@ -93,6 +106,10 @@ class Campaign < ApplicationRecord
     return nil unless recurring? && scheduled_at.present?
     
     case recurrence_interval
+    when 'minutely'
+      scheduled_at + 1.minute
+    when 'hourly'
+      scheduled_at + 1.hour
     when 'daily'
       scheduled_at + 1.day
     when 'weekly'

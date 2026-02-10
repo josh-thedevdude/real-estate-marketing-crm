@@ -1,13 +1,3 @@
-# == Schema Information
-#
-# Table name: campaign_audiences
-#
-#  id          :integer          not null, primary key
-#  audience_id :integer          not null
-#  campaign_id :integer          not null
-#  created_at  :datetime         not null
-#
-
 class CampaignAudience < ApplicationRecord
   belongs_to :campaign
   belongs_to :audience

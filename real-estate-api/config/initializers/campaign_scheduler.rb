@@ -21,7 +21,7 @@ Rails.application.config.after_initialize do
   if Rails.env.development?
     Thread.new do
       loop do
-        sleep 2.minutes
+        sleep 1.minutes
         CampaignSchedulerJob.perform_later
       end
     end

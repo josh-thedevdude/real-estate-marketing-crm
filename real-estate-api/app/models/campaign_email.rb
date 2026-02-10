@@ -4,7 +4,7 @@ class CampaignEmail < ApplicationRecord
   belongs_to :contact
   belongs_to :audience, optional: true
   
-  # Enums - Simplified without webhook-dependent statuses
+  # Enums
   enum :status, {
     pending: 0,
     sent: 1,
