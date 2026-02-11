@@ -29,8 +29,8 @@ class Contact < ApplicationRecord
   has_many :audiences, through: :audience_contacts
 
   # Validations  
-  validates :first_name, length: { minimum: 3, maximum: 50 }
-  validates :last_name, length: { minimum: 3, maximum: 50 }
+  validates :first_name, length: { minimum: 3, maximum: 50 }, allow_blank: true
+  validates :last_name, length: { minimum: 3, maximum: 50 }, allow_blank: true
   validates :email,
             presence: true,
             uniqueness: {

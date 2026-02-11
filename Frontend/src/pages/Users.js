@@ -291,7 +291,7 @@ const Users = () => {
       
       {/* Filters and Search Section */}
       <Card style={{ marginBottom: '1.5rem', padding: '1.25rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+        <div className="filters-row">
           {/* Search Bar */}
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
@@ -404,7 +404,7 @@ const Users = () => {
       </Card>
       
       {/* Actions Section */}
-      <div style={{ marginTop: '2rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <div className="action-bar">
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
           <input
             type="checkbox"
@@ -423,7 +423,7 @@ const Users = () => {
                 handleAdd();
               }} 
               variant="warning"
-              style={{ backgroundColor: '#f59e0b' }}
+              style={{ backgroundColor: 'transparent', color: '#f59e0b', border: '1px solid #f59e0b' }}
             >
               Invite Org Admin
             </Button>
@@ -475,6 +475,7 @@ const Users = () => {
             onChange={handleChange}
             required
             disabled={editingUser}
+            placeholder="user@example.com"
           />
           <Select
             label="Role"

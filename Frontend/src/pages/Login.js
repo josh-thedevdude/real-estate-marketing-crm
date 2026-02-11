@@ -64,6 +64,7 @@ const Login = () => {
             onChange={handleChange}
             placeholder="Enter your password"
             required
+            minLength={6}
           />
           <Button type="submit" fullWidth disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}

@@ -45,3 +45,39 @@
   font-size: 0.75rem;
   color: var(--danger-color);
 }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .input-group {
+    margin-bottom: 0.875rem;
+  }
+
+  .input-label {
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .input-field {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8rem;
+  }
+
+  .error-message {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .input-label {
+    font-size: 0.75rem;
+  }
+
+  .input-field {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.75rem;
+  }
+}

@@ -291,7 +291,9 @@ const Campaigns = () => {
             cursor: (campaign.deleted_at || campaign.status !== 'created') ? 'not-allowed' : 'pointer',
             padding: '0.25rem 0.5rem',
             fontSize: '0.75rem',
-            backgroundColor: '#10b981',
+            color: '#10b981',
+            backgroundColor: 'transparent',
+            border: '1px solid #10b981',
           }}
           title={
             campaign.deleted_at 
@@ -312,6 +314,8 @@ const Campaigns = () => {
   // Wrapper functions to prevent actions on deleted campaigns
   const handleEditWrapper = (campaign) => {
     if (campaign.deleted_at) return;
+    // Disable edit for executed campaigns (completed, running, failed, partial statuses)
+    if (campaign.status && campaign.status !== 'created' && campaign.status !== 'draft') return;
     handleEdit(campaign);
   };
 
@@ -379,7 +383,7 @@ const Campaigns = () => {
       </Card>
       
       {/* Actions Section */}
-      <div style={{ marginTop: '2rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <div className="action-bar">
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
           <input
             type="checkbox"
@@ -444,6 +448,9 @@ const Campaigns = () => {
             value={formData.name}
             onChange={handleChange}
             required
+            minLength={3}
+            maxLength={100}
+            placeholder="Minimum 3 characters"
           />
           
           <Input
@@ -452,10 +459,13 @@ const Campaigns = () => {
             value={formData.subject}
             onChange={handleChange}
             required
+            minLength={3}
+            maxLength={200}
+            placeholder="Email subject line"
           />
           
           <div className="input-group">
-            <label className="input-label">Email Body</label>
+            <label className="input-label">Email Body<span className="required">*</span></label>
             <textarea
               name="body"
               value={formData.body}

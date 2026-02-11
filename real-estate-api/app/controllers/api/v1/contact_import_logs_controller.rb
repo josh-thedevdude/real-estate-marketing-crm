@@ -7,8 +7,8 @@ module Api
       
       # GET /api/v1/contact_import_logs
       def index
-        # Org admins see all logs in organization, org users see only their own
-        @logs = current_user.org_admin? ? ContactImportLog.all : ContactImportLog.where(user: current_user)
+        # Both org admins and org users see only their own import logs
+        @logs = ContactImportLog.where(user: current_user)
         @logs = @logs.order(created_at: :desc)
                      .page(params[:page])
                      .per(params[:per_page] || 20)

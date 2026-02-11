@@ -318,7 +318,7 @@ const Contacts = () => {
       </Card>
       
       {/* Actions Section */}
-      <div style={{ marginTop: '2rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <div className="action-bar">
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
           <input
             type="checkbox"
@@ -329,7 +329,7 @@ const Contacts = () => {
           <span>Include Deleted Contacts</span>
         </label>
         
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div className="action-bar-right">
           <label className="btn btn-secondary btn-medium" style={{ cursor: 'pointer', margin: 0 }}>
             Import CSV
             <input
@@ -372,12 +372,18 @@ const Contacts = () => {
             name="first_name"
             value={formData.first_name}
             onChange={handleChange}
+            minLength={3}
+            maxLength={50}
+            placeholder="Minimum 3 characters"
           />
           <Input
             label="Last Name"
             name="last_name"
             value={formData.last_name}
             onChange={handleChange}
+            minLength={3}
+            maxLength={50}
+            placeholder="Minimum 3 characters"
           />
           <Input
             label="Email"
@@ -390,8 +396,13 @@ const Contacts = () => {
           <Input
             label="Phone"
             name="phone"
+            type="tel"
             value={formData.phone}
             onChange={handleChange}
+            pattern="[0-9]{10}"
+            minLength={10}
+            maxLength={10}
+            placeholder="10-digit mobile number"
           />
 
           <hr style={{ margin: '1.5rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />

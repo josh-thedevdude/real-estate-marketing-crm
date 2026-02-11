@@ -196,7 +196,7 @@ const Organizations = () => {
       
       {/* Filters and Search Section */}
       <Card style={{ marginBottom: '1.5rem', padding: '1.25rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+        <div className="filters-row">
           {/* Search Bar */}
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
@@ -257,7 +257,7 @@ const Organizations = () => {
       </Card>
       
       {/* Actions Section */}
-      <div style={{ marginTop: '2rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <div className="action-bar">
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
           <input
             type="checkbox"
@@ -296,6 +296,9 @@ const Organizations = () => {
             value={formData.name}
             onChange={(e) => setFormData({ name: e.target.value })}
             required
+            minLength={3}
+            maxLength={50}
+            placeholder="Minimum 3 characters"
           />
           <div className="modal-actions">
             <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>

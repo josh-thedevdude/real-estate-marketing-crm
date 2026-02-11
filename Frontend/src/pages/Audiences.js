@@ -286,7 +286,7 @@ const Audiences = () => {
       </Card>
       
       {/* Actions Section */}
-      <div style={{ marginTop: '2rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <div className="action-bar">
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
           <input
             type="checkbox"
@@ -329,6 +329,9 @@ const Audiences = () => {
             value={formData.name}
             onChange={handleChange}
             required
+            minLength={3}
+            maxLength={50}
+            placeholder="Minimum 3 characters"
           />
           <div className="input-group">
             <label className="input-label">Description (minimum 10 characters if provided)</label>

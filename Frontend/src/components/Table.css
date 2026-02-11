@@ -3,11 +3,27 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Scroll hint */
+.table-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to left, rgba(0,0,0,0.05), transparent);
+  pointer-events: none;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 1000px;
 }
 
 .table thead {
@@ -22,6 +38,8 @@
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 .table td {
@@ -29,6 +47,7 @@
   border-bottom: 1px solid var(--border-color);
   font-size: 0.875rem;
   color: var(--text-primary);
+  vertical-align: middle;
 }
 
 .table tbody tr:last-child td {
@@ -39,21 +58,70 @@
   background-color: var(--bg-light);
 }
 
+/* Deleted row styling */
+.table tbody tr.deleted-row {
+  opacity: 0.7;
+  background-color: #f3f4f6;
+  pointer-events: none;
+}
+
+.table tbody tr.deleted-row td {
+  color: #6b7280;
+}
+
+.table tbody tr.deleted-row .badge {
+  opacity: 0.7;
+  border-color: #9ca3af;
+  color: #6b7280;
+}
+
+.table tbody tr.deleted-row .btn-action {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  border-color: #d1d5db;
+  color: #9ca3af;
+}
+
+.table tbody tr.deleted-row .btn-action:hover {
+  background-color: transparent;
+  transform: none;
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  border-color: #d1d5db;
+  color: #9ca3af;
+}
+
+.btn-action:disabled:hover {
+  background-color: transparent;
+  transform: none;
+}
+
 .actions-col {
   text-align: center;
-  width: 180px;
+  width: 200px;
+  min-width: 200px;
+  vertical-align: middle;
 }
 
 .action-buttons {
   display: flex;
+  flex-direction: row;
   gap: 0.5rem;
   justify-content: center;
   align-items: center;
+  flex-wrap: nowrap;
+  margin: 0;
+  padding: 0;
 }
 
 .btn-action {
   padding: 0.5rem 1rem;
-  border: none;
+  border: 1px solid currentColor;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -68,26 +136,33 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  background-color: transparent;
 }
 
 .btn-edit {
-  background-color: #3b82f6;
-  color: white;
+  color: #3b82f6;
 }
 
 .btn-edit:hover {
-  background-color: #2563eb;
+  background-color: rgba(59, 130, 246, 0.1);
   transform: translateY(-1px);
 }
 
 .btn-delete {
-  background-color: #ef4444;
-  color: white;
+  color: #ef4444;
 }
 
 .btn-delete:hover {
-  background-color: #dc2626;
+  background-color: rgba(239, 68, 68, 0.1);
   transform: translateY(-1px);
+}
+
+.btn-action-view {
+  color: #6366f1;
+}
+
+.btn-action-view:hover {
+  background-color: rgba(99, 102, 241, 0.1);
 }
 
 .table-loading,
@@ -98,4 +173,89 @@
   background-color: white;
   border-radius: 8px;
   box-shadow: var(--shadow);
+}
+
+/* Scrollbar styling */
+.table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .table-container {
+    border-radius: 4px;
+  }
+
+  .table {
+    min-width: 1000px;
+  }
+  .table th,
+  .table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-action {
+    min-width: 70px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.7rem;
+    height: 28px;
+  }
+
+  .actions-col {
+    width: 160px;
+    min-width: 160px;
+  }
+
+  .action-buttons {
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-container {
+    border-radius: 4px;
+  }
+
+  .table {
+    min-width: 1000px;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .btn-action {
+    min-width: 60px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.65rem;
+    height: 26px;
+  }
+
+  .actions-col {
+    width: 150px;
+    min-width: 150px;
+  }
+
+  .table-loading,
+  .table-empty {
+    padding: 2rem 1rem;
+    font-size: 0.875rem;
+  }
 }

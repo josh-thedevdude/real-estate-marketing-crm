@@ -34,18 +34,18 @@ module Api
       def org_admin_stats
         {
           users: current_user.organization.users.kept.count,
-          contacts: current_user.organization.contacts.kept.count,
-          audiences: current_user.organization.audiences.kept.count,
-          campaigns: current_user.organization.campaigns.kept.count,
-          imports: current_user.organization.contact_import_logs.count
+          contacts: Contact.where(created_by: current_user).kept.count,
+          audiences: Audience.where(created_by: current_user).kept.count,
+          campaigns: Campaign.where(created_by: current_user).kept.count,
+          imports: ContactImportLog.where(user: current_user).count
         }
       end
       
       def org_user_stats
         {
-          contacts: current_user.organization.contacts.kept.count,
-          audiences: current_user.organization.audiences.kept.count,
-          campaigns: current_user.organization.campaigns.kept.count
+          contacts: Contact.where(created_by: current_user).kept.count,
+          audiences: Audience.where(created_by: current_user).kept.count,
+          campaigns: Campaign.where(created_by: current_user).kept.count
         }
       end
     end

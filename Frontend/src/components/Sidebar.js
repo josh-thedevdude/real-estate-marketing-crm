@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { isSuperAdmin, isOrgAdmin } from '../utils/permissions';
@@ -6,6 +6,30 @@ import './Sidebar.css';
 
 const Sidebar = () => {
   const { user } = useSelector((state) => state.auth);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const closeSidebar = () => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  };
 
   const superAdminLinks = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -43,25 +67,50 @@ const Sidebar = () => {
   const links = getLinks();
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-brand">
-        <h2>Real Estate CRM</h2>
-      </div>
-      <nav className="sidebar-nav">
-        {links.map((link) => (
-          <NavLink
-            key={link.path}
-            to={link.path}
-            className={({ isActive }) =>
-              `sidebar-link ${isActive ? 'active' : ''}`
-            }
-          >
-            <span className="sidebar-icon">{link.icon}</span>
-            <span className="sidebar-label">{link.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+    <>
+      {/* Mobile Menu Button */}
+      {isMobile && (
+        <button className="mobile-menu-btn" onClick={toggleSidebar} aria-label="Toggle menu">
+          <span className={`hamburger ${isOpen ? 'open' : ''}`}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+      )}
+
+      {/* Overlay */}
+      {isMobile && isOpen && (
+        <div className="sidebar-overlay" onClick={closeSidebar}></div>
+      )}
+
+      {/* Sidebar */}
+      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="sidebar-brand">
+          <h2>Real Estate CRM</h2>
+          {isMobile && (
+            <button className="sidebar-close" onClick={closeSidebar} aria-label="Close menu">
+              ✕
+            </button>
+          )}
+        </div>
+        <nav className="sidebar-nav">
+          {links.map((link) => (
+            <NavLink
+              key={link.path}
+              to={link.path}
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? 'active' : ''}`
+              }
+              onClick={closeSidebar}
+            >
+              <span className="sidebar-icon">{link.icon}</span>
+              <span className="sidebar-label">{link.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 };
 

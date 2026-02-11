@@ -70,3 +70,48 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-small {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .btn-medium {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-large {
+    padding: 0.7rem 1.4rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.75rem;
+  }
+
+  .btn-small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  .btn-medium {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.75rem;
+  }
+
+  .btn-large {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+  }
+}
