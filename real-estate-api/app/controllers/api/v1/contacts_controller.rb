@@ -9,7 +9,8 @@ module Api
       
       # GET /api/v1/contacts
       def index
-        @contacts = Contact.by_user(current_user.id)
+        # Org admins can see all contacts in organization, org users see only their own
+        @contacts = current_user.org_admin? ? Contact.all : Contact.by_user(current_user.id)
         @contacts = @contacts.search(params[:q]) if params[:q].present?
         @contacts = @contacts.page(params[:page]).per(params[:per_page] || 20)
         
@@ -96,13 +97,15 @@ module Api
           status: :pending
         )
         
-        # Save file temporarily
-        temp_file = Tempfile.new(['contact_import', '.csv'])
-        temp_file.binmode
-        temp_file.write(file.read)
-        temp_file.rewind
+        # Save file to a persistent location in storage
+        file_path = Rails.root.join('tmp', 'imports', "import_#{import_log.id}_#{SecureRandom.hex(8)}.csv")
+        FileUtils.mkdir_p(File.dirname(file_path))
         
-        ContactImportJob.perform_later(import_log.id, temp_file.path)
+        File.open(file_path, 'wb') do |f|
+          f.write(file.read)
+        end
+        
+        ContactImportJob.perform_later(import_log.id, file_path.to_s)
         
         render json: {
           message: 'Import started',

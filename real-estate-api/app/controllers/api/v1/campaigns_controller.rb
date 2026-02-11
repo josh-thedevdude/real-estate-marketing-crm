@@ -266,13 +266,7 @@ module Api
           :recurrence_interval,
           :recurrence_end_date,
           :max_occurrences,
-          custom_variables: {},
-          filters: [
-            :contact_type,
-            property_locations: [],
-            property_types: [],
-            timelines: []
-          ]
+          custom_variables: {}
         )
       end
       
@@ -291,7 +285,6 @@ module Api
           scheduled_type: campaign.scheduled_type,
           scheduled_at: campaign.scheduled_at,
           email_template_id: campaign.email_template_id,
-          filters: campaign.filters || {},
           audience_ids: campaign.audiences.pluck(:id),
           audiences: campaign.audiences.map { |a| { id: a.id, name: a.name } },
           created_at: campaign.created_at,

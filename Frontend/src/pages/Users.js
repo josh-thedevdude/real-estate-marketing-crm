@@ -164,7 +164,7 @@ const Users = () => {
   // Role options based on current user's role
   const roleOptions = isSuperAdmin(currentUser)
     ? [
-        { value: 'super_admin', label: 'Super Admin' },
+        // { value: 'super_admin', label: 'Super Admin' },
         { value: 'org_admin', label: 'Organization Admin' },
         { value: 'org_user', label: 'Organization User' },
       ]
@@ -462,7 +462,7 @@ const Users = () => {
           {!editingUser && (
             <div style={{ padding: '1rem', backgroundColor: '#dbeafe', borderRadius: '6px', marginBottom: '1rem' }}>
               <p style={{ margin: 0, fontSize: '0.875rem', color: '#1e40af' }}>
-                ℹ️ An invitation email will be sent to the user. They will set their password when accepting the invitation.
+                 An invitation email will be sent to the user. They will set their password when accepting the invitation.
               </p>
             </div>
           )}
@@ -494,14 +494,15 @@ const Users = () => {
               required
             />
           )}
-          {isSuperAdmin(currentUser) && (
+          {isSuperAdmin(currentUser) && (formData.role === 'org_admin' || formData.role === 'org_user') && (
             <Select
               label="Organization"
               name="organization_id"
               value={formData.organization_id}
               onChange={handleChange}
               options={organizationOptions}
-              placeholder="Select organization (optional)"
+              placeholder="Select organization"
+              required
             />
           )}
           <div className="modal-actions">

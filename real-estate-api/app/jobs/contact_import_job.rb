@@ -16,6 +16,8 @@ class ContactImportJob < ApplicationJob
     import_log = ContactImportLog.find(import_log_id)
     import_log.update!(status: :processing)
     
+    Rails.logger.info "ContactImportJob: Starting import for log #{import_log_id}, user: #{import_log.user.email}, org: #{import_log.organization.name}"
+    
     errors = []
     successful = 0
     total = 0
@@ -77,7 +79,12 @@ class ContactImportJob < ApplicationJob
       failed_rows: errors.count,
       error_details: errors
     )
+    
+    Rails.logger.info "ContactImportJob: Completed import for log #{import_log_id}. Total: #{total}, Success: #{successful}, Failed: #{errors.count}"
   rescue => e
+    Rails.logger.error "ContactImportJob: Failed import for log #{import_log_id}. Error: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    
     import_log.update!(
       status: :failed,
       error_details: [{

@@ -89,15 +89,7 @@ class Campaign < ApplicationRecord
   end
   
   def can_execute?
-    created? && has_target_contacts? && (email_template.present? || (subject.present? && body.present?))
-  end
-  
-  def has_target_contacts?
-    audiences.any? || has_filters?
-  end
-  
-  def has_filters?
-    filters.present? && filters.any? { |k, v| v.present? && (v.is_a?(String) ? v.strip.present? : v.any?) }
+    created? && audiences.any? && (email_template.present? || (subject.present? && body.present?))
   end
   
   def can_update?

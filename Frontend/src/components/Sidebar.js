@@ -11,10 +11,10 @@ const Sidebar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/organizations', label: 'Organizations', icon: '🏢' },
     { path: '/users', label: 'Users', icon: '👥' },
-    { path: '/contacts', label: 'Contacts', icon: '📇' },
-    { path: '/audiences', label: 'Audiences', icon: '🎯' },
-    { path: '/campaigns', label: 'Campaigns', icon: '📧' },
-    { path: '/import-logs', label: 'Import Logs', icon: '📥' },
+    // { path: '/contacts', label: 'Contacts', icon: '📇' },
+    // { path: '/audiences', label: 'Audiences', icon: '🎯' },
+    // { path: '/campaigns', label: 'Campaigns', icon: '📧' },
+    // { path: '/import-logs', label: 'Import Logs', icon: '📥' },
   ];
 
   const orgAdminLinks = [
@@ -31,6 +31,7 @@ const Sidebar = () => {
     { path: '/contacts', label: 'Contacts', icon: '📇' },
     { path: '/audiences', label: 'Audiences', icon: '🎯' },
     { path: '/campaigns', label: 'Campaigns', icon: '📧' },
+    { path: '/import-logs', label: 'Import Logs', icon: '📥' },
   ];
 
   const getLinks = () => {

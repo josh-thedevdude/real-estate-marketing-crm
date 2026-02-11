@@ -10,28 +10,7 @@ class CampaignContactsService
     contact_ids = Set.new
     audience_contacts = {}
     
-    # First, get contacts from campaign-level filters
-    if campaign.filters.present? && campaign.filters.any? { |k, v| v.present? }
-      temp_audience = Audience.new(
-        filters: campaign.filters,
-        organization: campaign.organization,
-        name: 'temp_campaign_filters',
-        created_by: campaign.created_by
-      )
-      campaign_filtered_contacts = AudienceQueryService.new(temp_audience).contacts
-      
-      campaign_filtered_contacts.each do |contact|
-        unless contact_ids.include?(contact.id)
-          contact_ids.add(contact.id)
-          audience_contacts[contact.id] = {
-            contact: contact,
-            audience: nil # From campaign filters, not a specific audience
-          }
-        end
-      end
-    end
-    
-    # Then, add contacts from audiences
+    # Get contacts from all campaign audiences
     campaign.audiences.each do |audience|
       # Get contacts from filters (dynamic)
       filter_contacts = AudienceQueryService.new(audience).contacts

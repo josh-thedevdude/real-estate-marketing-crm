@@ -7,10 +7,11 @@ module Api
       
       # GET /api/v1/contact_import_logs
       def index
-        @logs = ContactImportLog.where(user: current_user)
-                                 .order(created_at: :desc)
-                                 .page(params[:page])
-                                 .per(params[:per_page] || 20)
+        # Org admins see all logs in organization, org users see only their own
+        @logs = current_user.org_admin? ? ContactImportLog.all : ContactImportLog.where(user: current_user)
+        @logs = @logs.order(created_at: :desc)
+                     .page(params[:page])
+                     .per(params[:per_page] || 20)
         
         render json: {
           import_logs: @logs.map { |log| import_log_json(log) },

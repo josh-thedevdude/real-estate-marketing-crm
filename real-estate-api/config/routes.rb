@@ -16,6 +16,9 @@ Rails.application.routes.draw do
       post 'auth/logout', to: 'authentication#logout'
       get 'auth/me', to: 'authentication#me'
       
+      # Dashboard stats
+      get 'dashboard/stats', to: 'dashboard#stats'
+      
       # Resources
       resources :organizations
       

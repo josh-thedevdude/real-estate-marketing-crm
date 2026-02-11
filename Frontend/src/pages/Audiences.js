@@ -123,13 +123,19 @@ const Audiences = () => {
   };
 
   const handleFilterMultiSelect = (e, fieldName) => {
-    const options = Array.from(e.target.selectedOptions);
-    const values = options.map(option => option.value);
+    const clickedValue = e.target.value;
+    const currentValues = formData.filters[fieldName] || [];
+    
+    // Toggle: if value exists, remove it; if not, add it
+    const newValues = currentValues.includes(clickedValue)
+      ? currentValues.filter(v => v !== clickedValue)
+      : [...currentValues, clickedValue];
+    
     setFormData({
       ...formData,
       filters: {
         ...formData.filters,
-        [fieldName]: values
+        [fieldName]: newValues
       }
     });
   };
@@ -160,7 +166,11 @@ const Audiences = () => {
           setIsModalOpen(false);
           fetchAudiences();
         } catch (err) {
-          setError(err.response?.data?.error || 'An error occurred');
+          console.error('Audience creation error:', err.response?.data);
+          const errorMsg = err.response?.data?.errors 
+            ? err.response.data.errors.join(', ')
+            : err.response?.data?.error || 'An error occurred';
+          setError(errorMsg);
         }
       },
       variant: 'primary',
@@ -308,7 +318,11 @@ const Audiences = () => {
         title={editingAudience ? 'Edit Audience' : 'Create Audience'}
       >
         <form onSubmit={handleSubmit}>
-          {error && <div className="error-alert">{error}</div>}
+          {error && (
+            <div className="error-alert" style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#991b1b' }}>
+              {typeof error === 'string' ? error : JSON.stringify(error)}
+            </div>
+          )}
           <Input
             label="Audience Name"
             name="name"
@@ -356,92 +370,79 @@ const Audiences = () => {
           </div>
 
           <div className="input-group">
-            <label className="input-label">Property Locations (Hold Ctrl/Cmd for multiple)</label>
-            <select
-              multiple
-              value={formData.filters.property_locations || []}
-              onChange={(e) => handleFilterMultiSelect(e, 'property_locations')}
-              className="input-field"
-              style={{ minHeight: '150px' }}
-            >
-              <option value="baner">Baner</option>
-              <option value="wakad">Wakad</option>
-              <option value="hinjewadi">Hinjewadi</option>
-              <option value="kharadi">Kharadi</option>
-              <option value="hadapsar">Hadapsar</option>
-              <option value="wagholi">Wagholi</option>
-              <option value="kondhwa">Kondhwa</option>
-              <option value="undri">Undri</option>
-              <option value="ravet">Ravet</option>
-              <option value="moshi">Moshi</option>
-              <option value="pimpri">Pimpri</option>
-              <option value="chinchwad">Chinchwad</option>
-              <option value="akurdi">Akurdi</option>
-            </select>
+            <label className="input-label">Property Locations (Click to select/deselect)</label>
+            <div style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '0.75rem', maxHeight: '200px', overflowY: 'auto', backgroundColor: 'white' }}>
+              {['baner', 'wakad', 'hinjewadi', 'kharadi', 'hadapsar', 'wagholi', 'kondhwa', 'undri', 'ravet', 'moshi', 'pimpri', 'chinchwad', 'akurdi'].map(location => (
+                <label key={location} style={{ display: 'flex', alignItems: 'center', padding: '0.5rem', cursor: 'pointer', borderRadius: '4px', ':hover': { backgroundColor: '#f3f4f6' } }}>
+                  <input
+                    type="checkbox"
+                    value={location}
+                    checked={(formData.filters.property_locations || []).includes(location)}
+                    onChange={(e) => handleFilterMultiSelect(e, 'property_locations')}
+                    style={{ marginRight: '0.5rem', cursor: 'pointer' }}
+                  />
+                  <span style={{ textTransform: 'capitalize' }}>{location}</span>
+                </label>
+              ))}
+            </div>
             <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
               Selected: {(formData.filters.property_locations || []).length} location(s)
             </small>
           </div>
 
           <div className="input-group">
-            <label className="input-label">Property Types (Hold Ctrl/Cmd for multiple)</label>
-            <select
-              multiple
-              value={formData.filters.property_types || []}
-              onChange={(e) => handleFilterMultiSelect(e, 'property_types')}
-              className="input-field"
-              style={{ minHeight: '120px' }}
-            >
-              <option value="apartment">Apartment</option>
-              <option value="villa">Villa</option>
-              <option value="plot">Plot</option>
-              <option value="commercial">Commercial</option>
-              <option value="1bhk">1 BHK</option>
-              <option value="2bhk">2 BHK</option>
-              <option value="3bhk">3 BHK</option>
-              <option value="4bhk">4 BHK</option>
-            </select>
+            <label className="input-label">Property Types (Click to select/deselect)</label>
+            <div style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '0.75rem', maxHeight: '200px', overflowY: 'auto', backgroundColor: 'white' }}>
+              {[
+                { value: 'apartment', label: 'Apartment' },
+                { value: 'villa', label: 'Villa' },
+                { value: 'plot', label: 'Plot' },
+                { value: 'commercial', label: 'Commercial' },
+                { value: '1bhk', label: '1 BHK' },
+                { value: '2bhk', label: '2 BHK' },
+                { value: '3bhk', label: '3 BHK' },
+                { value: '4bhk', label: '4 BHK' }
+              ].map(type => (
+                <label key={type.value} style={{ display: 'flex', alignItems: 'center', padding: '0.5rem', cursor: 'pointer', borderRadius: '4px' }}>
+                  <input
+                    type="checkbox"
+                    value={type.value}
+                    checked={(formData.filters.property_types || []).includes(type.value)}
+                    onChange={(e) => handleFilterMultiSelect(e, 'property_types')}
+                    style={{ marginRight: '0.5rem', cursor: 'pointer' }}
+                  />
+                  <span>{type.label}</span>
+                </label>
+              ))}
+            </div>
             <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
               Selected: {(formData.filters.property_types || []).length} type(s)
             </small>
           </div>
 
           <div className="input-group">
-            <label className="input-label">Timelines (Hold Ctrl/Cmd for multiple)</label>
-            <select
-              multiple
-              value={formData.filters.timelines || []}
-              onChange={(e) => handleFilterMultiSelect(e, 'timelines')}
-              className="input-field"
-              style={{ minHeight: '100px' }}
-            >
-              <option value="immediate">Immediate</option>
-              <option value="within_3_months">Within 3 Months</option>
-              <option value="within_6_months">Within 6 Months</option>
-              <option value="within_12_months">Within 12 Months</option>
-            </select>
+            <label className="input-label">Timelines (Click to select/deselect)</label>
+            <div style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '0.75rem', backgroundColor: 'white' }}>
+              {[
+                { value: 'immediate', label: 'Immediate' },
+                { value: 'within_3_months', label: 'Within 3 Months' },
+                { value: 'within_6_months', label: 'Within 6 Months' },
+                { value: 'within_12_months', label: 'Within 12 Months' }
+              ].map(timeline => (
+                <label key={timeline.value} style={{ display: 'flex', alignItems: 'center', padding: '0.5rem', cursor: 'pointer', borderRadius: '4px' }}>
+                  <input
+                    type="checkbox"
+                    value={timeline.value}
+                    checked={(formData.filters.timelines || []).includes(timeline.value)}
+                    onChange={(e) => handleFilterMultiSelect(e, 'timelines')}
+                    style={{ marginRight: '0.5rem', cursor: 'pointer' }}
+                  />
+                  <span>{timeline.label}</span>
+                </label>
+              ))}
+            </div>
             <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
               Selected: {(formData.filters.timelines || []).length} timeline(s)
-            </small>
-          </div>
-          
-          <div className="input-group">
-            <label className="input-label">Select Contacts (Optional - Hold Ctrl/Cmd for multiple)</label>
-            <select
-              multiple
-              value={formData.contact_ids}
-              onChange={handleContactChange}
-              className="input-field"
-              style={{ minHeight: '150px' }}
-            >
-              {contacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.first_name} {contact.last_name} ({contact.email})
-                </option>
-              ))}
-            </select>
-            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
-              Selected: {formData.contact_ids.length} contact(s). These contacts will be automatically included when you use this audience in campaigns.
             </small>
           </div>
           
