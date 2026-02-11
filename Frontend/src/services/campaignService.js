@@ -17,13 +17,18 @@ const campaignService = {
   // POST /api/v1/campaigns - Create campaign
   create: async (data) => {
     // Clean up data: if scheduled_at is empty, don't send it and set scheduled_type to immediate
-    const { audience_ids, ...campaignData } = data;
+    const { audience_ids, filters, ...campaignData } = data;
     const cleanData = { ...campaignData };
     if (!cleanData.scheduled_at || cleanData.scheduled_at.trim() === '') {
       delete cleanData.scheduled_at;
       cleanData.scheduled_type = 'immediate';
     } else {
       cleanData.scheduled_type = 'scheduled';
+    }
+    
+    // Add filters to campaign data
+    if (filters) {
+      cleanData.filters = filters;
     }
     
     const response = await api.post('/campaigns', { campaign: cleanData, audience_ids });
@@ -33,13 +38,18 @@ const campaignService = {
   // PATCH /api/v1/campaigns/:id - Update campaign
   update: async (id, data) => {
     // Clean up data: if scheduled_at is empty, don't send it and set scheduled_type to immediate
-    const { audience_ids, ...campaignData } = data;
+    const { audience_ids, filters, ...campaignData } = data;
     const cleanData = { ...campaignData };
     if (!cleanData.scheduled_at || cleanData.scheduled_at.trim() === '') {
       delete cleanData.scheduled_at;
       cleanData.scheduled_type = 'immediate';
     } else {
       cleanData.scheduled_type = 'scheduled';
+    }
+    
+    // Add filters to campaign data
+    if (filters) {
+      cleanData.filters = filters;
     }
     
     const response = await api.patch(`/campaigns/${id}`, { campaign: cleanData, audience_ids });

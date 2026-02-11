@@ -38,6 +38,11 @@ const audienceService = {
     const response = await api.post('/audiences/preview', { filters });
     return response.data;
   },
+
+  previewContacts: async (filters) => {
+    const response = await api.post('/audiences/preview', { filters });
+    return response.data;
+  },
 };
 
 export default audienceService;

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_06_060714) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_11_042848) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -97,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_060714) do
     t.datetime "deleted_at"
     t.text "description"
     t.bigint "email_template_id"
+    t.jsonb "filters", default: {}, null: false
     t.string "name", null: false
     t.bigint "organization_id", null: false
     t.datetime "scheduled_at"
@@ -107,6 +108,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_060714) do
     t.index ["created_by_id"], name: "index_campaigns_on_created_by_id"
     t.index ["deleted_at"], name: "index_campaigns_on_deleted_at"
     t.index ["email_template_id"], name: "index_campaigns_on_email_template_id"
+    t.index ["filters"], name: "index_campaigns_on_filters", using: :gin
     t.index ["organization_id", "deleted_at"], name: "index_campaigns_on_org_and_deleted"
     t.index ["organization_id", "name"], name: "index_campaigns_on_org_and_name", unique: true, where: "(deleted_at IS NULL)"
     t.index ["organization_id", "status", "deleted_at"], name: "index_campaigns_on_org_status_deleted"

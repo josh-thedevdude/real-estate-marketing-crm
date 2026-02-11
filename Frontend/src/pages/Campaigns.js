@@ -28,7 +28,14 @@ const Campaigns = () => {
     body: '',
     audience_ids: [],
     scheduled_at: '',
+    filters: {
+      contact_type: '',
+      property_locations: [],
+      property_types: [],
+      timelines: [],
+    },
   });
+  const [filteredContactsCount, setFilteredContactsCount] = useState(0);
   const [error, setError] = useState('');
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -120,23 +127,46 @@ const Campaigns = () => {
       body: '',
       audience_ids: [],
       scheduled_at: '',
+      filters: {
+        contact_type: '',
+        property_locations: [],
+        property_types: [],
+        timelines: [],
+      },
     });
+    setFilteredContactsCount(0);
     setError('');
     setIsModalOpen(true);
   };
 
-  const handleEdit = (campaign) => {
-    setEditingCampaign(campaign);
-    setSelectedTemplate('');
-    setFormData({
-      name: campaign.name || '',
-      subject: campaign.subject || '',
-      body: campaign.body || '',
-      audience_ids: campaign.audience_ids || [],
-      scheduled_at: campaign.scheduled_at ? new Date(campaign.scheduled_at).toISOString().slice(0, 16) : '',
-    });
-    setError('');
-    setIsModalOpen(true);
+  const handleEdit = async (campaign) => {
+    try {
+      const data = await campaignService.getById(campaign.id);
+      setEditingCampaign(data);
+      setSelectedTemplate('');
+      setFormData({
+        name: data.name || '',
+        subject: data.subject || '',
+        body: data.body || '',
+        audience_ids: data.audience_ids || [],
+        scheduled_at: data.scheduled_at ? new Date(data.scheduled_at).toISOString().slice(0, 16) : '',
+        filters: data.filters || {
+          contact_type: '',
+          property_locations: [],
+          property_types: [],
+          timelines: [],
+        },
+      });
+      setFilteredContactsCount(0);
+      // Fetch filtered contacts count if filters exist
+      if (data.filters && Object.keys(data.filters).length > 0) {
+        fetchFilteredContactsCount(data.filters);
+      }
+      setError('');
+      setIsModalOpen(true);
+    } catch (err) {
+      setError('Error fetching campaign details');
+    }
   };
 
   const handleTemplateChange = (e) => {
@@ -181,6 +211,44 @@ const Campaigns = () => {
     const options = Array.from(e.target.selectedOptions);
     const values = options.map(option => parseInt(option.value));
     setFormData({ ...formData, audience_ids: values });
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    const updatedFilters = { ...formData.filters, [name]: value };
+    setFormData({ ...formData, filters: updatedFilters });
+    // Fetch filtered contacts count whenever filters change
+    fetchFilteredContactsCount(updatedFilters);
+  };
+
+  const handleFilterMultiSelect = (e, fieldName) => {
+    const selectedOptions = Array.from(e.target.selectedOptions);
+    const values = selectedOptions.map(option => option.value);
+    const updatedFilters = { ...formData.filters, [fieldName]: values };
+    setFormData({ ...formData, filters: updatedFilters });
+    // Fetch filtered contacts count whenever filters change
+    fetchFilteredContactsCount(updatedFilters);
+  };
+
+  const fetchFilteredContactsCount = async (filters) => {
+    // Check if any filter has a value
+    const hasFilters = filters.contact_type ||
+      (filters.property_locations && filters.property_locations.length > 0) ||
+      (filters.property_types && filters.property_types.length > 0) ||
+      (filters.timelines && filters.timelines.length > 0);
+
+    if (!hasFilters) {
+      setFilteredContactsCount(0);
+      return;
+    }
+
+    try {
+      const response = await audienceService.previewContacts(filters);
+      setFilteredContactsCount(response.contact_count || 0);
+    } catch (err) {
+      console.error('Error fetching filtered contacts:', err);
+      setFilteredContactsCount(0);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -463,26 +531,109 @@ const Campaigns = () => {
             </small>
           </div>
 
+          <hr style={{ margin: '1.5rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+          <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: '600' }}>Smart Filters (Auto-select contacts)</h3>
+          <small style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1rem', display: 'block' }}>
+            Use these filters to automatically target contacts based on their preferences. You can also select audiences above for additional contacts.
+          </small>
+
           <div className="input-group">
-            <label className="input-label">Select Audiences (Hold Ctrl/Cmd for multiple)</label>
+            <label className="input-label">Contact Type</label>
+            <select
+              name="contact_type"
+              value={formData.filters.contact_type || ''}
+              onChange={handleFilterChange}
+              className="input-field"
+            >
+              <option value="">-- All Types --</option>
+              <option value="buyer">Buyer</option>
+              <option value="seller">Seller</option>
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Property Locations (Hold Ctrl/Cmd for multiple)</label>
             <select
               multiple
-              value={formData.audience_ids}
-              onChange={handleAudienceChange}
+              value={formData.filters.property_locations || []}
+              onChange={(e) => handleFilterMultiSelect(e, 'property_locations')}
               className="input-field"
-              style={{ minHeight: '120px' }}
-              required
+              style={{ minHeight: '150px' }}
             >
-              {audienceOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="baner">Baner</option>
+              <option value="wakad">Wakad</option>
+              <option value="hinjewadi">Hinjewadi</option>
+              <option value="kharadi">Kharadi</option>
+              <option value="hadapsar">Hadapsar</option>
+              <option value="wagholi">Wagholi</option>
+              <option value="kondhwa">Kondhwa</option>
+              <option value="undri">Undri</option>
+              <option value="ravet">Ravet</option>
+              <option value="moshi">Moshi</option>
+              <option value="pimpri">Pimpri</option>
+              <option value="chinchwad">Chinchwad</option>
+              <option value="akurdi">Akurdi</option>
             </select>
-            <small style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-              Selected: {formData.audience_ids.length} audience(s)
+            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+              Selected: {(formData.filters.property_locations || []).length} location(s)
             </small>
           </div>
+
+          <div className="input-group">
+            <label className="input-label">Property Types (Hold Ctrl/Cmd for multiple)</label>
+            <select
+              multiple
+              value={formData.filters.property_types || []}
+              onChange={(e) => handleFilterMultiSelect(e, 'property_types')}
+              className="input-field"
+              style={{ minHeight: '120px' }}
+            >
+              <option value="apartment">Apartment</option>
+              <option value="villa">Villa</option>
+              <option value="plot">Plot</option>
+              <option value="commercial">Commercial</option>
+              <option value="1bhk">1 BHK</option>
+              <option value="2bhk">2 BHK</option>
+              <option value="3bhk">3 BHK</option>
+              <option value="4bhk">4 BHK</option>
+            </select>
+            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+              Selected: {(formData.filters.property_types || []).length} type(s)
+            </small>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Timelines (Hold Ctrl/Cmd for multiple)</label>
+            <select
+              multiple
+              value={formData.filters.timelines || []}
+              onChange={(e) => handleFilterMultiSelect(e, 'timelines')}
+              className="input-field"
+              style={{ minHeight: '100px' }}
+            >
+              <option value="immediate">Immediate</option>
+              <option value="within_3_months">Within 3 Months</option>
+              <option value="within_6_months">Within 6 Months</option>
+              <option value="within_12_months">Within 12 Months</option>
+            </select>
+            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+              Selected: {(formData.filters.timelines || []).length} timeline(s)
+            </small>
+          </div>
+
+          {filteredContactsCount > 0 && (
+            <div style={{ 
+              marginTop: '1rem', 
+              padding: '1rem', 
+              backgroundColor: '#ecfdf5', 
+              border: '1px solid #10b981',
+              borderRadius: '6px',
+              color: '#047857',
+              fontWeight: '500'
+            }}>
+              ✓ {filteredContactsCount} contact{filteredContactsCount !== 1 ? 's' : ''} will be automatically selected based on your filters
+            </div>
+          )}
 
           <div className="input-group">
             <label className="input-label">Schedule At (Optional)</label>

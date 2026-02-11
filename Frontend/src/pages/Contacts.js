@@ -22,6 +22,14 @@ const Contacts = () => {
     last_name: '',
     email: '',
     phone: '',
+    preferences: {
+      contact_type: '',
+      min_budget: '',
+      max_budget: '',
+      property_locations: [],
+      property_types: [],
+      timeline: ''
+    }
   });
   const [error, setError] = useState('');
   const [importFile, setImportFile] = useState(null);
@@ -61,7 +69,20 @@ const Contacts = () => {
 
   const handleAdd = () => {
     setEditingContact(null);
-    setFormData({ first_name: '', last_name: '', email: '', phone: '' });
+    setFormData({ 
+      first_name: '', 
+      last_name: '', 
+      email: '', 
+      phone: '',
+      preferences: {
+        contact_type: '',
+        min_budget: '',
+        max_budget: '',
+        property_locations: [],
+        property_types: [],
+        timeline: ''
+      }
+    });
     setError('');
     setIsModalOpen(true);
   };
@@ -73,6 +94,14 @@ const Contacts = () => {
       last_name: contact.last_name || '',
       email: contact.email,
       phone: contact.phone || '',
+      preferences: {
+        contact_type: contact.preferences?.contact_type || '',
+        min_budget: contact.preferences?.min_budget || '',
+        max_budget: contact.preferences?.max_budget || '',
+        property_locations: contact.preferences?.property_locations || [],
+        property_types: contact.preferences?.property_types || [],
+        timeline: contact.preferences?.timeline || ''
+      }
     });
     setError('');
     setIsModalOpen(true);
@@ -98,6 +127,29 @@ const Contacts = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePreferenceChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      preferences: {
+        ...formData.preferences,
+        [name]: value
+      }
+    });
+  };
+
+  const handleMultiSelectChange = (e, fieldName) => {
+    const options = Array.from(e.target.selectedOptions);
+    const values = options.map(option => option.value);
+    setFormData({
+      ...formData,
+      preferences: {
+        ...formData.preferences,
+        [fieldName]: values
+      }
+    });
   };
 
   const handleSubmit = (e) => {
@@ -341,6 +393,111 @@ const Contacts = () => {
             value={formData.phone}
             onChange={handleChange}
           />
+
+          <hr style={{ margin: '1.5rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+          <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: '600' }}>Contact Preferences</h3>
+
+          <div className="input-group">
+            <label className="input-label">Contact Type</label>
+            <select
+              name="contact_type"
+              value={formData.preferences.contact_type}
+              onChange={handlePreferenceChange}
+              className="input-field"
+            >
+              <option value="">-- Select Type --</option>
+              <option value="buyer">Buyer</option>
+              <option value="seller">Seller</option>
+
+            </select>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <Input
+              label="Min Budget"
+              type="number"
+              name="min_budget"
+              value={formData.preferences.min_budget}
+              onChange={handlePreferenceChange}
+              placeholder="e.g., 500000"
+            />
+            <Input
+              label="Max Budget"
+              type="number"
+              name="max_budget"
+              value={formData.preferences.max_budget}
+              onChange={handlePreferenceChange}
+              placeholder="e.g., 1000000"
+            />
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Property Locations (Hold Ctrl/Cmd for multiple)</label>
+            <select
+              multiple
+              value={formData.preferences.property_locations}
+              onChange={(e) => handleMultiSelectChange(e, 'property_locations')}
+              className="input-field"
+              style={{ minHeight: '150px' }}
+            >
+              <option value="baner">Baner</option>
+              <option value="wakad">Wakad</option>
+              <option value="hinjewadi">Hinjewadi</option>
+              <option value="kharadi">Kharadi</option>
+              <option value="hadapsar">Hadapsar</option>
+              <option value="wagholi">Wagholi</option>
+              <option value="kondhwa">Kondhwa</option>
+              <option value="undri">Undri</option>
+              <option value="ravet">Ravet</option>
+              <option value="moshi">Moshi</option>
+              <option value="pimpri">Pimpri</option>
+              <option value="chinchwad">Chinchwad</option>
+              <option value="akurdi">Akurdi</option>
+            </select>
+            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+              Selected: {formData.preferences.property_locations.length} location(s)
+            </small>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Property Types (Hold Ctrl/Cmd for multiple)</label>
+            <select
+              multiple
+              value={formData.preferences.property_types}
+              onChange={(e) => handleMultiSelectChange(e, 'property_types')}
+              className="input-field"
+              style={{ minHeight: '120px' }}
+            >
+              <option value="apartment">Apartment</option>
+              <option value="villa">Villa</option>
+              <option value="plot">Plot</option>
+              <option value="commercial">Commercial</option>
+              <option value="1bhk">1 BHK</option>
+              <option value="2bhk">2 BHK</option>
+              <option value="3bhk">3 BHK</option>
+              <option value="4bhk">4 BHK</option>
+            </select>
+            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+              Selected: {formData.preferences.property_types.length} type(s)
+            </small>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Timeline</label>
+            <select
+              name="timeline"
+              value={formData.preferences.timeline}
+              onChange={handlePreferenceChange}
+              className="input-field"
+            >
+              <option value="">-- Select Timeline --</option>
+              <option value="immediate">Immediate</option>
+              <option value="within_3_months">Within 3 Months</option>
+              <option value="within_6_months">Within 6 Months</option>
+              <option value="within_12_months">Within 12 Months</option>
+            </select>
+          </div>
+
           <div className="modal-actions">
             <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
               Cancel
@@ -378,6 +535,36 @@ const Contacts = () => {
             <div style={{ marginBottom: '1rem' }}>
               <strong>Phone:</strong> {viewingContact.phone || '-'}
             </div>
+            <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+            <h4 style={{ marginBottom: '0.75rem', fontWeight: '600' }}>Preferences</h4>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Contact Type:</strong> {viewingContact.preferences?.contact_type || '-'}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Budget Range:</strong> {
+                viewingContact.preferences?.min_budget || viewingContact.preferences?.max_budget
+                  ? `$${viewingContact.preferences?.min_budget || '0'} - $${viewingContact.preferences?.max_budget || 'No limit'}`
+                  : '-'
+              }
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Property Locations:</strong> {
+                viewingContact.preferences?.property_locations?.length > 0
+                  ? viewingContact.preferences.property_locations.join(', ')
+                  : '-'
+              }
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Property Types:</strong> {
+                viewingContact.preferences?.property_types?.length > 0
+                  ? viewingContact.preferences.property_types.join(', ')
+                  : '-'
+              }
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Timeline:</strong> {viewingContact.preferences?.timeline || '-'}
+            </div>
+            <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
             <div style={{ marginBottom: '1rem' }}>
               <strong>Created At:</strong> {formatDate(viewingContact.created_at)}
             </div>

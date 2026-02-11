@@ -111,6 +111,29 @@ const Audiences = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      filters: {
+        ...formData.filters,
+        [name]: value
+      }
+    });
+  };
+
+  const handleFilterMultiSelect = (e, fieldName) => {
+    const options = Array.from(e.target.selectedOptions);
+    const values = options.map(option => option.value);
+    setFormData({
+      ...formData,
+      filters: {
+        ...formData.filters,
+        [fieldName]: values
+      }
+    });
+  };
+
   const handleContactChange = (e) => {
     const options = Array.from(e.target.selectedOptions);
     const values = options.map(option => parseInt(option.value));
@@ -311,6 +334,96 @@ const Audiences = () => {
               </small>
             )}
           </div>
+
+          <hr style={{ margin: '1.5rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+          <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: '600' }}>Smart Filters (Auto-select contacts based on preferences)</h3>
+          <small style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1rem', display: 'block' }}>
+            These filters will automatically match contacts with matching preferences. You can combine manual selection above with smart filters.
+          </small>
+
+          <div className="input-group">
+            <label className="input-label">Contact Type</label>
+            <select
+              name="contact_type"
+              value={formData.filters.contact_type || ''}
+              onChange={handleFilterChange}
+              className="input-field"
+            >
+              <option value="">-- All Types --</option>
+              <option value="buyer">Buyer</option>
+              <option value="seller">Seller</option>
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Property Locations (Hold Ctrl/Cmd for multiple)</label>
+            <select
+              multiple
+              value={formData.filters.property_locations || []}
+              onChange={(e) => handleFilterMultiSelect(e, 'property_locations')}
+              className="input-field"
+              style={{ minHeight: '150px' }}
+            >
+              <option value="baner">Baner</option>
+              <option value="wakad">Wakad</option>
+              <option value="hinjewadi">Hinjewadi</option>
+              <option value="kharadi">Kharadi</option>
+              <option value="hadapsar">Hadapsar</option>
+              <option value="wagholi">Wagholi</option>
+              <option value="kondhwa">Kondhwa</option>
+              <option value="undri">Undri</option>
+              <option value="ravet">Ravet</option>
+              <option value="moshi">Moshi</option>
+              <option value="pimpri">Pimpri</option>
+              <option value="chinchwad">Chinchwad</option>
+              <option value="akurdi">Akurdi</option>
+            </select>
+            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+              Selected: {(formData.filters.property_locations || []).length} location(s)
+            </small>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Property Types (Hold Ctrl/Cmd for multiple)</label>
+            <select
+              multiple
+              value={formData.filters.property_types || []}
+              onChange={(e) => handleFilterMultiSelect(e, 'property_types')}
+              className="input-field"
+              style={{ minHeight: '120px' }}
+            >
+              <option value="apartment">Apartment</option>
+              <option value="villa">Villa</option>
+              <option value="plot">Plot</option>
+              <option value="commercial">Commercial</option>
+              <option value="1bhk">1 BHK</option>
+              <option value="2bhk">2 BHK</option>
+              <option value="3bhk">3 BHK</option>
+              <option value="4bhk">4 BHK</option>
+            </select>
+            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+              Selected: {(formData.filters.property_types || []).length} type(s)
+            </small>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Timelines (Hold Ctrl/Cmd for multiple)</label>
+            <select
+              multiple
+              value={formData.filters.timelines || []}
+              onChange={(e) => handleFilterMultiSelect(e, 'timelines')}
+              className="input-field"
+              style={{ minHeight: '100px' }}
+            >
+              <option value="immediate">Immediate</option>
+              <option value="within_3_months">Within 3 Months</option>
+              <option value="within_6_months">Within 6 Months</option>
+              <option value="within_12_months">Within 12 Months</option>
+            </select>
+            <small style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+              Selected: {(formData.filters.timelines || []).length} timeline(s)
+            </small>
+          </div>
           
           <div className="input-group">
             <label className="input-label">Select Contacts (Optional - Hold Ctrl/Cmd for multiple)</label>
@@ -360,6 +473,44 @@ const Audiences = () => {
             <div style={{ marginBottom: '1rem' }}>
               <strong>Description:</strong> {viewingAudience.description || '-'}
             </div>
+
+            <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Smart Filters:</strong>
+              {viewingAudience.filters && Object.keys(viewingAudience.filters).some(key => 
+                viewingAudience.filters[key] && (
+                  typeof viewingAudience.filters[key] === 'string' || 
+                  (Array.isArray(viewingAudience.filters[key]) && viewingAudience.filters[key].length > 0)
+                )
+              ) ? (
+                <div style={{ marginTop: '0.5rem', paddingLeft: '1rem' }}>
+                  {viewingAudience.filters.contact_type && (
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>Contact Type:</strong> {viewingAudience.filters.contact_type}
+                    </div>
+                  )}
+                  {viewingAudience.filters.property_locations && viewingAudience.filters.property_locations.length > 0 && (
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>Property Locations:</strong> {viewingAudience.filters.property_locations.join(', ')}
+                    </div>
+                  )}
+                  {viewingAudience.filters.property_types && viewingAudience.filters.property_types.length > 0 && (
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>Property Types:</strong> {viewingAudience.filters.property_types.join(', ')}
+                    </div>
+                  )}
+                  {viewingAudience.filters.timelines && viewingAudience.filters.timelines.length > 0 && (
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>Timelines:</strong> {viewingAudience.filters.timelines.join(', ')}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <span style={{ color: '#6b7280', fontStyle: 'italic', marginLeft: '0.5rem' }}>No filters applied</span>
+              )}
+            </div>
+
+            <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
             <div style={{ marginBottom: '1rem' }}>
               <strong>Total Contacts:</strong> {viewingAudience.contacts?.length || 0}
             </div>
@@ -375,18 +526,6 @@ const Audiences = () => {
                 </ul>
               </div>
             )}
-            <div style={{ marginBottom: '1rem' }}>
-              <strong>Filters:</strong>{' '}
-              <pre style={{ 
-                backgroundColor: '#f3f4f6', 
-                padding: '0.5rem', 
-                borderRadius: '4px',
-                fontSize: '0.875rem',
-                overflowX: 'auto'
-              }}>
-                {JSON.stringify(viewingAudience.filters, null, 2)}
-              </pre>
-            </div>
             <div style={{ marginBottom: '1rem' }}>
               <strong>Created At:</strong> {formatDate(viewingAudience.created_at)}
             </div>

@@ -249,7 +249,7 @@ module Api
       def execution_errors
         errors = []
         errors << 'Campaign must be in created status' unless @campaign.created?
-        errors << 'Campaign must have at least one audience' if @campaign.audiences.empty?
+        errors << 'Campaign must have at least one audience or smart filters configured' unless @campaign.has_target_contacts?
         errors << 'Campaign must have an email template or subject and body' unless @campaign.email_template.present? || (@campaign.subject.present? && @campaign.body.present?)
         errors
       end
@@ -266,7 +266,13 @@ module Api
           :recurrence_interval,
           :recurrence_end_date,
           :max_occurrences,
-          custom_variables: {}
+          custom_variables: {},
+          filters: [
+            :contact_type,
+            property_locations: [],
+            property_types: [],
+            timelines: []
+          ]
         )
       end
       
@@ -285,6 +291,7 @@ module Api
           scheduled_type: campaign.scheduled_type,
           scheduled_at: campaign.scheduled_at,
           email_template_id: campaign.email_template_id,
+          filters: campaign.filters || {},
           audience_ids: campaign.audiences.pluck(:id),
           audiences: campaign.audiences.map { |a| { id: a.id, name: a.name } },
           created_at: campaign.created_at,
