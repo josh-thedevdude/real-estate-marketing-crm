@@ -1,5 +1,5 @@
 import React from 'react';
-import './Table.css';
+import './components_css/Table.css';
 
 const Table = ({ columns, data, onEdit, onDelete, loading = false }) => {
   if (loading) {

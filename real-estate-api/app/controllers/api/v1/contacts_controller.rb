@@ -9,8 +9,8 @@ module Api
       
       # GET /api/v1/contacts
       def index
-        # Org admins can see all contacts in organization, org users see only their own
-        @contacts = current_user.org_admin? ? Contact.all : Contact.by_user(current_user.id)
+        # All users (org_admin and org_user) see only contacts they created
+        @contacts = Contact.by_user(current_user.id)
         @contacts = @contacts.search(params[:q]) if params[:q].present?
         @contacts = @contacts.page(params[:page]).per(params[:per_page] || 20)
         

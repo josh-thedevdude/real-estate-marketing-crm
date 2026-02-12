@@ -5,7 +5,7 @@ import userService from '../services/userService';
 import { loginSuccess } from '../store/authSlice';
 import Input from '../components/Input';
 import Button from '../components/Button';
-import './Login.css';
+import './pages_css/Login.css';
 
 const AcceptInvitation = () => {
   const [searchParams] = useSearchParams();
@@ -107,6 +107,10 @@ const AcceptInvitation = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password (8-15 characters)"
+            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,15}"
+            title="Password must be 8-15 characters and include at least one uppercase letter, one lowercase letter, and one digit"
+            minLength={8}
+            maxLength={15}
             required
           />
 
@@ -122,8 +126,10 @@ const AcceptInvitation = () => {
           <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
             <p style={{ margin: '0.25rem 0' }}>Password requirements:</p>
             <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
-              <li>Minimum 8 characters</li>
-              <li>Maximum 15 characters</li>
+              <li>Minimum 8 characters, maximum 15 characters</li>
+              <li>At least one uppercase letter (A-Z)</li>
+              <li>At least one lowercase letter (a-z)</li>
+              <li>At least one digit (0-9)</li>
             </ul>
           </div>
 

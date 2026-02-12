@@ -75,7 +75,7 @@ const Users = () => {
     setFormData({
       email: '',
       role: 'org_user',
-      organization_id: '',
+      organization_id: isSuperAdmin(currentUser) ? '' : currentUser.organization_id,
     });
     setError('');
     setIsModalOpen(true);

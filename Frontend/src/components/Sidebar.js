@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { isSuperAdmin, isOrgAdmin } from '../utils/permissions';
-import './Sidebar.css';
+import './components_css/Sidebar.css';
 
 const Sidebar = () => {
   const { user } = useSelector((state) => state.auth);

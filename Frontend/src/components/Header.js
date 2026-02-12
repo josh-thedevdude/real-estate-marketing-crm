@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../store/authSlice';
 import authService from '../services/authService';
 import { capitalizeFirst } from '../utils/helpers';
-import './Header.css';
+import './components_css/Header.css';
 
 const Header = () => {
   const dispatch = useDispatch();

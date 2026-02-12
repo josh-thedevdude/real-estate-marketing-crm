@@ -1,5 +1,5 @@
 import React from 'react';
-import './Unauthorized.css';
+import './pages_css/Unauthorized.css';
 
 const Unauthorized = () => {
   return (

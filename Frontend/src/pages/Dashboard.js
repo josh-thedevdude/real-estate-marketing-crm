@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { isSuperAdmin, isOrgAdmin } from '../utils/permissions';
 import dashboardService from '../services/dashboardService';
 import Card from '../components/Card';
-import './Dashboard.css';
+import './pages_css/Dashboard.css';
 
 const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);

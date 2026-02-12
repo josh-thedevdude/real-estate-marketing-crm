@@ -154,6 +154,26 @@ const Contacts = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate budgets
+    const minBudget = parseFloat(formData.preferences.min_budget);
+    const maxBudget = parseFloat(formData.preferences.max_budget);
+    
+    if (formData.preferences.min_budget && minBudget <= 0) {
+      setError('Min Budget must be greater than 0');
+      return;
+    }
+    
+    if (formData.preferences.max_budget && maxBudget <= 0) {
+      setError('Max Budget must be greater than 0');
+      return;
+    }
+    
+    if (formData.preferences.min_budget && formData.preferences.max_budget && maxBudget <= minBudget) {
+      setError('Max Budget must be greater than Min Budget');
+      return;
+    }
+    
     const action = editingContact ? 'update' : 'create';
     const actionText = editingContact ? 'Update' : 'Create';
     
@@ -431,6 +451,8 @@ const Contacts = () => {
               value={formData.preferences.min_budget}
               onChange={handlePreferenceChange}
               placeholder="e.g., 500000"
+              min="1"
+              step="1"
             />
             <Input
               label="Max Budget"
@@ -439,6 +461,8 @@ const Contacts = () => {
               value={formData.preferences.max_budget}
               onChange={handlePreferenceChange}
               placeholder="e.g., 1000000"
+              min="1"
+              step="1"
             />
           </div>
 

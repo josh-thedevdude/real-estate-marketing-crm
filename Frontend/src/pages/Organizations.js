@@ -7,7 +7,7 @@ import Modal from '../components/Modal';
 import ConfirmModal from '../components/ConfirmModal';
 import Input from '../components/Input';
 import { formatDate } from '../utils/helpers';
-import './Organizations.css';
+import './pages_css/Organizations.css';
 
 const Organizations = () => {
   const [organizations, setOrganizations] = useState([]);

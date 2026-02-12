@@ -29,6 +29,13 @@ module Api
       def create
         # Validate role and organization
         unless can_create_user_with_role?
+          Rails.logger.debug "Authorization failed:"
+          Rails.logger.debug "Current user role: #{current_user.role}"
+          Rails.logger.debug "Current user org_id: #{current_user.organization_id}"
+          Rails.logger.debug "Target role: #{params.dig(:user, :role)}"
+          Rails.logger.debug "Target org_id: #{params.dig(:user, :organization_id)}"
+          Rails.logger.debug "Current user active?: #{current_user.active?}"
+          
           render json: {
             error: 'Unauthorized to create user with this role'
           }, status: :forbidden

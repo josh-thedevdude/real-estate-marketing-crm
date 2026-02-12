@@ -55,6 +55,10 @@ class User < ApplicationRecord
   validates :jti, presence: true, uniqueness: true
   # Password is only validated when it's being set (not on regular updates)
   validates :password, length: { minimum: 8, maximum: 15 }, if: -> { password.present? }
+  validates :password, format: { 
+    with: /\A(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+\z/,
+    message: 'must include at least one uppercase letter, one lowercase letter, and one digit'
+  }, if: -> { password.present? }
   
   # Organization is required for org_admin and org_user
   validates :organization, presence: true, if: -> { org_admin? || org_user? }
@@ -129,13 +133,17 @@ class User < ApplicationRecord
       # Super admin can create any user for any organization
       true
     elsif org_admin?
-      # Org admin can only create users for their own organization
-      # and cannot create super_admins
-      return false if target_role.to_s == 'super_admin'
+      # Org admin can create org_admins and org_users for their own organization
+      # but cannot create super_admins
+      return false if target_role == :super_admin
+      return false if target_organization_id != organization_id
+      true
+    elsif org_user?
+      # Org users can only create other org_users for their own organization
+      return false unless target_role == :org_user
       return false if target_organization_id != organization_id
       true
     else
-      # Org users cannot create other users
       false
     end
   end

@@ -1,5 +1,5 @@
 import React from 'react';
-import './Select.css';
+import './components_css/Select.css';
 
 const Select = ({
   label,

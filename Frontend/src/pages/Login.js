@@ -5,7 +5,7 @@ import { loginStart, loginSuccess, loginFailure } from '../store/authSlice';
 import authService from '../services/authService';
 import Input from '../components/Input';
 import Button from '../components/Button';
-import './Login.css';
+import './pages_css/Login.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });

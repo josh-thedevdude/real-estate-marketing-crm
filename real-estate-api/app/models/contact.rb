@@ -39,6 +39,11 @@ class Contact < ApplicationRecord
             },
             format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :phone,
+            format: {
+              with: /\A\d{10}\z/,
+              message: 'must be exactly 10 digits',
+              allow_blank: true
+            },
             uniqueness: {
               scope: [:organization_id, :deleted_at],
               conditions: -> { where(deleted_at: nil) },
