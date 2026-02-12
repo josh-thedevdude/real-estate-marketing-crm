@@ -1,0 +1,59 @@
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+vendor/bundle/
+
+# Logs
+*.log
+log/
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+build/
+dist/
+tmp/
+storage/
+
+# Database
+*.sqlite3
+*.db
+
+# Credentials
+config/credentials/*.key
+config/master.key
+
+# Uploads and temporary files
+public/uploads/
+tmp/imports/*
+!tmp/imports/.keep
+
+# Test coverage
+coverage/
+
+# Rails
+.bundle/
+db/*.sqlite3
+db/*.sqlite3-*
+
+# Vercel
+.vercel
+
+# Local secrets
+tmp/local_secret.txt

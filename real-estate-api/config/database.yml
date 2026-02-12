@@ -23,8 +23,10 @@ default: &default
 development:
   <<: *default
   database: real_estate_api_development
-  username: <%= ENV['DATABASE_USERNAME'] %>
+  username: <%= ENV['DATABASE_USERNAME'] || 'postgres' %>
   password: <%= ENV['DATABASE_PASSWORD'] %>
+  host: <%= ENV['DATABASE_HOST'] || 'localhost' %>
+  port: <%= ENV['DATABASE_PORT'] || 5432 %>
 
   # The specified database role being used to connect to PostgreSQL.
   # To create additional roles in PostgreSQL see `$ createuser --help`.
@@ -89,20 +91,7 @@ test:
 # for a full overview on how database connection configuration can be specified.
 #
 production:
-  primary: &primary_production
-    <<: *default
-    database: real_estate_api_production
-    username: real_estate_api
-    password: <%= ENV["REAL_ESTATE_API_DATABASE_PASSWORD"] %>
-  cache:
-    <<: *primary_production
-    database: real_estate_api_production_cache
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    database: real_estate_api_production_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    database: real_estate_api_production_cable
-    migrations_paths: db/cable_migrate
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+  # For Supabase, use connection pooler for better performance:
+  # url: <%= ENV['DATABASE_URL']&.sub(':5432/', ':6543/') %>
